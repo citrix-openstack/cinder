@@ -41,7 +41,18 @@ class XenAPINFSOperations(object):
         ''' Create the volume, and return with a dict containing
         provider_location
         '''
-        pass
+        with self._session_factory.get_session() as session:
+            host_ref = session.get_this_host()
+            with session.new_sr_on_nfs(host_ref, server, serverpath) as sr_ref:
+                sr_uuid = session.get_sr_uuid(sr_ref)
+                vdi_ref = session.create_new_vdi(sr_ref, size)
+                vdi_uuid = session.get_vdi_uuid(vdi_ref)
+
+            return dict(
+                sr_uuid=sr_uuid,
+                vdi_uuid=vdi_uuid,
+                server=server,
+                serverpath=serverpath)
 
     def _stuff(self):
         session_factory = xenapi_lib.SessionFactory(
