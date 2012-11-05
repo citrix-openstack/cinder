@@ -30,7 +30,7 @@ from cinder.openstack.common import log as logging
 from cinder.openstack.common import cfg
 from cinder import utils
 from cinder.volume import iscsi
-from cinder.volume import xenapi
+from cinder.volume.xenapi import nfs as xenapi_nfs
 
 
 LOG = logging.getLogger(__name__)
@@ -636,17 +636,16 @@ def _iscsi_authentication(chap, name, password):
 class XenAPINFSDriver(VolumeDriver):
 
     def do_setup(self, context):
-        session_factory = xenapi.SessionFactory(
-            FLAGS.xenapi_connection_url,
-            FLAGS.xenapi_connection_username,
-            FLAGS.xenapi_connection_password
-        )
-        self.xenapi_nfs = xenapi.XenAPINFSOperations(session_factory)
+        self.xenapi_nfs = xenapi_nfs.XenAPINFSOperations()
 
     def check_for_setup_error(self):
         """To override superclass' method"""
 
     def create_volume(self, volume):
+        return self.xenapi_nfs.create_volume(volume['size'])
+
+    def initialize_connection(self, volume, connector):
+        """Allow connection to connector and return connection info."""
         raise NotImplementedError()
 
     def create_volume_from_snapshot(self, volume, snapshot):

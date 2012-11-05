@@ -28,11 +28,22 @@ FLAGS.register_opts(xenapi_opts)
 FLAGS.register_opts(nfs_opts)
 
 
-class SessionFactory(object):
-    def __init__(self, url, user, password):
-        pass
-
-
 class XenAPINFSOperations(object):
-    def __init__(self, session_factory):
+    def __init__(self):
         pass
+
+    def create_volume(self, size):
+        ''' Create the volume, and return with a dict containing
+        provider_location
+        provider_auth (maybe)
+        display_name
+        display_description
+        '''
+        pass
+
+    def _stuff(self):
+        session_factory = xenapi_lib.SessionFactory(
+            FLAGS.xenapi_connection_url,
+            FLAGS.xenapi_connection_username,
+            FLAGS.xenapi_connection_password
+        )
