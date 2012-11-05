@@ -642,7 +642,11 @@ class XenAPINFSDriver(VolumeDriver):
         """To override superclass' method"""
 
     def create_volume(self, volume):
-        return self.xenapi_nfs.create_volume(volume['size'])
+        return self.xenapi_nfs.create_volume(
+            volume['size'],
+            volume['display_name'],
+            volume['display_description']
+        )
 
     def initialize_connection(self, volume, connector):
         """Allow connection to connector and return connection info."""

@@ -24,10 +24,11 @@ class DriverTestCase(unittest.TestCase):
         drv = driver.XenAPINFSDriver()
         drv.xenapi_nfs = ops
 
-        ops.create_volume(1).AndReturn('result')
+        ops.create_volume(1, 'name', 'desc').AndReturn('result')
 
         mock.ReplayAll()
-        result = drv.create_volume(dict(size=1))
+        result = drv.create_volume(dict(
+            size=1, display_name='name', display_description='desc'))
         mock.VerifyAll()
 
         self.assertEquals('result', result)

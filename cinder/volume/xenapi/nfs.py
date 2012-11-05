@@ -37,12 +37,9 @@ class XenAPINFSOperations(object):
             FLAGS.xenapi_connection_password
         )
 
-    def create_volume(self, size):
+    def create_volume(self, size, name, desc):
         ''' Create the volume, and return with a dict containing
         provider_location
-        provider_auth (maybe)
-        display_name
-        display_description
         '''
         pass
 
