@@ -1,6 +1,7 @@
 from cinder import flags
 from cinder.openstack.common import cfg
 from cinder.volume.xenapi import lib
+import json
 
 
 xenapi_opts = [
@@ -27,36 +28,3 @@ nfs_opts = [
 FLAGS = flags.FLAGS
 FLAGS.register_opts(xenapi_opts)
 FLAGS.register_opts(nfs_opts)
-
-
-class XenAPINFSOperations(object):
-    def __init__(self):
-        self.session_factory = lib.SessionFactory(
-            FLAGS.xenapi_connection_url,
-            FLAGS.xenapi_connection_username,
-            FLAGS.xenapi_connection_password
-        )
-
-    def create_volume(self, size, name, desc):
-        ''' Create the volume, and return with a dict containing
-        provider_location
-        '''
-        with self._session_factory.get_session() as session:
-            host_ref = session.get_this_host()
-            with session.new_sr_on_nfs(host_ref, server, serverpath) as sr_ref:
-                sr_uuid = session.get_sr_uuid(sr_ref)
-                vdi_ref = session.create_new_vdi(sr_ref, size)
-                vdi_uuid = session.get_vdi_uuid(vdi_ref)
-
-            return dict(
-                sr_uuid=sr_uuid,
-                vdi_uuid=vdi_uuid,
-                server=server,
-                serverpath=serverpath)
-
-    def _stuff(self):
-        session_factory = xenapi_lib.SessionFactory(
-            FLAGS.xenapi_connection_url,
-            FLAGS.xenapi_connection_username,
-            FLAGS.xenapi_connection_password
-        )

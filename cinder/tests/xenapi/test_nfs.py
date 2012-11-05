@@ -18,3 +18,17 @@ class InitTestCase(unittest.TestCase):
         mock.VerifyAll()
 
         self.assertEquals('sf', ops.session_factory)
+
+    def test_create_volume(self):
+        mock = mox.Mox()
+        mock.StubOutWithMock(nfs, 'FLAGS')
+        nfs.FLAGS.xenapi_nfs_server = 'server'
+        nfs.FLAGS.xenapi_nfs_serverpath = 'path'
+        ops = nfs.XenAPINFSOperations()
+
+
+        mock.ReplayAll()
+        ops = nfs.XenAPINFSOperations()
+        mock.VerifyAll()
+
+        self.assertEquals('sf', ops.session_factory)
