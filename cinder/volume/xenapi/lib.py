@@ -145,14 +145,15 @@ class XenAPISession(object):
 
     # NFS specific
     @contextlib.contextmanager
-    def new_sr_on_nfs(self, host_ref, server, serverpath):
+    def new_sr_on_nfs(self, host_ref, server, serverpath,
+                      name_label=None, name_description=None):
 
         device_config = dict(
             server=server,
             serverpath=serverpath
         )
-        name_label = 'name-label'
-        name_description = 'name-description'
+        name_label = name_label or ''
+        name_description = name_description or ''
         sr_type = 'nfs'
 
         sr_ref = self.create_sr(
@@ -166,14 +167,15 @@ class XenAPISession(object):
 
         self.unplug_pbds_and_forget_sr(sr_ref)
 
-    def plug_nfs_sr(self, host_ref, server, serverpath, sr_uuid):
+    def plug_nfs_sr(self, host_ref, server, serverpath, sr_uuid,
+                    name_label=None, name_description=None):
 
         device_config = dict(
             server=server,
             serverpath=serverpath
         )
-        name_label = 'name-label'
-        name_description = 'name-description'
+        name_label = name_label or ''
+        name_description = name_description or ''
         sr_type = 'nfs'
 
         sr_ref = self.introduce_sr(
