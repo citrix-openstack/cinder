@@ -225,10 +225,6 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
-class NFSConnectionData(dict):
-    pass
-
-
 class NFSBasedVolumeOperations(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
@@ -239,27 +235,24 @@ class NFSBasedVolumeOperations(object):
             host_ref = session.get_this_host()
             with session.new_sr_on_nfs(host_ref, server, serverpath,
                                        name, description) as sr_ref:
-                sr_uuid = session.get_sr_uuid(sr_ref)
                 vdi_ref = session.create_new_vdi(sr_ref, size)
-                vdi_uuid = session.get_vdi_uuid(vdi_ref)
 
-            return NFSConnectionData(
-                sr_uuid=sr_uuid,
-                vdi_uuid=vdi_uuid,
-                server=server,
-                serverpath=serverpath)
+                return dict(
+                    sr_uuid=session.get_sr_uuid(sr_ref),
+                    vdi_uuid=session.get_vdi_uuid(vdi_ref)
+                )
 
-    def connect_volume(self, host_uuid, connection_data):
+    def connect_volume(self, host_uuid, server, serverpath, volume_details):
         with self._session_factory.get_session() as session:
             host_ref = session.get_host_by_uuid(host_uuid)
             sr_ref = session.plug_nfs_sr(
                 host_ref,
-                connection_data['server'],
-                connection_data['serverpath'],
-                connection_data['sr_uuid']
+                server,
+                serverpath,
+                volume_details['sr_uuid']
             )
             session.scan_sr(sr_ref)
-            return session.get_vdi_by_uuid(connection_data['vdi_uuid'])
+            return session.get_vdi_by_uuid(volume_details['vdi_uuid'])
 
     def disconnect_volume(self, vdi_ref):
         with self._session_factory.get_session() as session:

@@ -670,14 +670,14 @@ class XenAPINFSDriver(VolumeDriver):
         """To override superclass' method"""
 
     def create_volume(self, volume):
-        connection_data = self.nfs_ops.create_volume(
+        volume_details = self.nfs_ops.create_volume(
             FLAGS.xenapi_nfs_server,
             FLAGS.xenapi_nfs_serverpath,
             volume['size'],
             volume['display_name'],
             volume['display_description']
         )
-        location = "%(sr_uuid)s/%(vdi_uuid)s" % connection_data
+        location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
         return dict(provider_location=location)
 
     def initialize_connection(self, volume, connector):
