@@ -200,7 +200,7 @@ class XenAPISession(object):
         return sr_ref
 
 
-class ContextManagedSession(XenAPISession):
+class ContextAwareSession(XenAPISession):
     def __enter__(self):
         return self
 
@@ -212,7 +212,7 @@ def connect(url, user, password):
     import XenAPI
     session = XenAPI.Session(url)
     session.login_with_password(user, password)
-    return ContextManagedSession(session, XenAPI.Failure)
+    return ContextAwareSession(session, XenAPI.Failure)
 
 
 class SessionFactory(object):
