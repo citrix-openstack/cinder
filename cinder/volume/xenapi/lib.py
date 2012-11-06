@@ -64,6 +64,8 @@ class XenAPISession(object):
     def create_sr(self, host_ref, device_config, name_label, name_description,
                   sr_type, physical_size=None, content_type=None,
                   shared=False, sm_config=None):
+        print name_label
+        print name_description
         return self.call_xenapi(
             'SR.create',
             host_ref,
