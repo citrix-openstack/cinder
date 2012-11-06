@@ -95,8 +95,8 @@ class XenAPISession(object):
         return self.call_xenapi(
             'SR.introduce',
             sr_uuid,
-            name_label,
-            name_description,
+            name_label or '',
+            name_description or '',
             sr_type,
             content_type or '',
             shared,
@@ -180,8 +180,6 @@ class XenAPISession(object):
             server=server,
             serverpath=serverpath
         )
-        name_label = name_label or ''
-        name_description = name_description or ''
         sr_type = 'nfs'
 
         sr_ref = self.introduce_sr(
