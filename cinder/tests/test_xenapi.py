@@ -53,8 +53,12 @@ class DriverTestCase(unittest.TestCase):
         drv = driver.XenAPINFSDriver()
         drv.nfs_ops = ops
 
+        conn_data = dict(
+            sr_uuid='sr_uuid',
+            vdi_uuid='vdi_uuid'
+        )
         ops.create_volume(
-            'server', 'path', 1, 'name', 'desc').AndReturn('result')
+            'server', 'path', 1, 'name', 'desc').AndReturn(conn_data)
 
         mock.ReplayAll()
         result = drv.create_volume(dict(
@@ -62,5 +66,5 @@ class DriverTestCase(unittest.TestCase):
         mock.VerifyAll()
 
         self.assertEquals(dict(
-                metadata='result'
+                provider_location='sr_uuid/vdi_uuid'
             ), result)

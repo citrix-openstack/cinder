@@ -677,7 +677,8 @@ class XenAPINFSDriver(VolumeDriver):
             volume['display_name'],
             volume['display_description']
         )
-        return dict(metadata=connection_data)
+        location = "%(sr_uuid)s/%(vdi_uuid)s" % connection_data
+        return dict(provider_location=location)
 
     def initialize_connection(self, volume, connector):
         """Allow connection to connector and return connection info."""
