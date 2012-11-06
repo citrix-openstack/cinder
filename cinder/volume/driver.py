@@ -31,7 +31,7 @@ from cinder.openstack.common import cfg
 from cinder import utils
 from cinder.volume import iscsi
 from cinder.volume.xenapi import lib as xenapi_lib
-from cinder.volume.xenapi import nfs as xenapi_nfs
+from cinder.volume.xenapi import options as xenapi_options
 
 
 LOG = logging.getLogger(__name__)
@@ -62,6 +62,8 @@ volume_opts = [
 
 FLAGS = flags.FLAGS
 FLAGS.register_opts(volume_opts)
+FLAGS.register_opts(xenapi_options.xenapi)
+FLAGS.register_opts(xenapi_options.nfs)
 
 
 class VolumeDriver(object):
@@ -648,11 +650,14 @@ class XenAPINFSDriver(VolumeDriver):
         """To override superclass' method"""
 
     def create_volume(self, volume):
-        return self.xenapi_nfs.create_volume(
+        connection_data = self.nfs_ops.create_volume(
+            FLAGS.xenapi_nfs_server,
+            FLAGS.xenapi_nfs_serverpath,
             volume['size'],
             volume['display_name'],
             volume['display_description']
         )
+        return dict(metadata=connection_data)
 
     def initialize_connection(self, volume, connector):
         """Allow connection to connector and return connection info."""

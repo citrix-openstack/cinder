@@ -1,10 +1,7 @@
-from cinder import flags
 from cinder.openstack.common import cfg
-from cinder.volume.xenapi import lib
-import json
 
 
-xenapi_opts = [
+xenapi = [
     cfg.StrOpt('xenapi_connection_url',
                default=None,
                help='URL for XenAPI connection'),
@@ -16,7 +13,7 @@ xenapi_opts = [
                help='Password for XenAPI connection'),
 ]
 
-nfs_opts = [
+nfs = [
     cfg.StrOpt('xenapi_nfs_server',
                default=None,
                help='NFS server to be used by XenAPINFSDriver'),
@@ -24,7 +21,3 @@ nfs_opts = [
                default=None,
                help='Path of exported NFS, used by XenAPINFSDriver'),
 ]
-
-FLAGS = flags.FLAGS
-FLAGS.register_opts(xenapi_opts)
-FLAGS.register_opts(nfs_opts)

@@ -221,21 +221,25 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
+class NFSConnectionData(dict):
+    pass
+
+
 class NFSBasedVolumeOperations(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
 
-    #TODO: get rid of host_uuid
-    def create_volume(self, host_uuid, server, serverpath, size):
-        'Returns connection_data, which could be used to connect to the vol'
+    def create_volume(self, server, serverpath, size,
+                      name=None, description=None):
         with self._session_factory.get_session() as session:
-            host_ref = session.get_host_by_uuid(host_uuid)
-            with session.new_sr_on_nfs(host_ref, server, serverpath) as sr_ref:
+            host_ref = session.get_this_host()
+            with session.new_sr_on_nfs(host_ref, server, serverpath,
+                                       name, desc) as sr_ref:
                 sr_uuid = session.get_sr_uuid(sr_ref)
                 vdi_ref = session.create_new_vdi(sr_ref, size)
                 vdi_uuid = session.get_vdi_uuid(vdi_ref)
 
-            return dict(
+            return NFSConnectionData(
                 sr_uuid=sr_uuid,
                 vdi_uuid=vdi_uuid,
                 server=server,
