@@ -64,15 +64,13 @@ class XenAPISession(object):
     def create_sr(self, host_ref, device_config, name_label, name_description,
                   sr_type, physical_size=None, content_type=None,
                   shared=False, sm_config=None):
-        print "label", name_label
-        print "desc", name_description
         return self.call_xenapi(
             'SR.create',
             host_ref,
             device_config,
             physical_size or '0',
-            name_label or 'blah',
-            name_description or 'blah',
+            name_label or '',
+            name_description or '',
             sr_type,
             content_type or '',
             shared,
@@ -121,6 +119,12 @@ class XenAPISession(object):
     # Record based operations
     def get_sr_uuid(self, sr_ref):
         return self.get_sr_record(sr_ref)['uuid']
+
+    def get_sr_name_label(self, sr_ref):
+        return self.get_sr_record(sr_ref)['name_label']
+
+    def get_sr_name_description(self, sr_ref):
+        return self.get_sr_record(sr_ref)['name_description']
 
     def get_vdi_uuid(self, vdi_ref):
         return self.get_vdi_record(vdi_ref)['uuid']
