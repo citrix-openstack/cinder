@@ -31,7 +31,6 @@ from cinder.openstack.common import cfg
 from cinder import utils
 from cinder.volume import iscsi
 from cinder.volume.xenapi import lib as xenapi_lib
-from cinder.volume.xenapi import options as xenapi_options
 
 
 LOG = logging.getLogger(__name__)
@@ -60,10 +59,31 @@ volume_opts = [
                help='The port that the iSCSI daemon is listening on'),
     ]
 
+xenapi_opts = [
+    cfg.StrOpt('xenapi_connection_url',
+               default=None,
+               help='URL for XenAPI connection'),
+    cfg.StrOpt('xenapi_connection_username',
+               default='root',
+               help='Username for XenAPI connection'),
+    cfg.StrOpt('xenapi_connection_password',
+               default=None,
+               help='Password for XenAPI connection'),
+]
+
+xenapi_nfs_opts = [
+    cfg.StrOpt('xenapi_nfs_server',
+               default=None,
+               help='NFS server to be used by XenAPINFSDriver'),
+    cfg.StrOpt('xenapi_nfs_serverpath',
+               default=None,
+               help='Path of exported NFS, used by XenAPINFSDriver'),
+]
+
 FLAGS = flags.FLAGS
 FLAGS.register_opts(volume_opts)
-FLAGS.register_opts(xenapi_options.xenapi)
-FLAGS.register_opts(xenapi_options.nfs)
+FLAGS.register_opts(xenapi_opts)
+FLAGS.register_opts(xenapi_nfs_opts)
 
 
 class VolumeDriver(object):
