@@ -7,18 +7,23 @@ class XenAPIException(Exception):
         self.original_exception = original_exception
 
 
-class PbdOperations(object):
+class OperationsBase(object):
     def __init__(self, xenapi_session):
         self.session = xenapi_session
 
+    def call_xenapi(self, method, *args):
+        return self.session.call_xenapi(method, *args)
+
+
+class PbdOperations(OperationsBase):
     def get_all(self):
-        return self.session.call_xenapi('PBD.get_all')
+        return self.call_xenapi('PBD.get_all')
 
     def unplug(self, pbd_ref):
-        self.session.call_xenapi('PBD.unplug', pbd_ref)
+        self.call_xenapi('PBD.unplug', pbd_ref)
 
     def create(self, host_ref, sr_ref, device_config):
-        return self.session.call_xenapi(
+        return self.call_xenapi(
             'PBD.create',
             dict(
                 host=host_ref,
@@ -28,7 +33,7 @@ class PbdOperations(object):
         )
 
     def plug(self, pbd_ref):
-        self.session.call_xenapi('PBD.plug', pbd_ref)
+        self.call_xenapi('PBD.plug', pbd_ref)
 
 
 class XenAPISession(object):
