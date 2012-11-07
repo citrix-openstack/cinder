@@ -115,6 +115,17 @@ class VdiOperations(OperationsBase):
         )
 
 
+class HostOperations(OperationsBase):
+    def get_record(self, host_ref):
+        return self.call_xenapi('host.get_record', host_ref)
+
+    def get_by_uuid(self, host_uuid):
+        return self.call_xenapi('host.get_by_uuid', host_uuid)
+
+    def get_uuid(self, host_ref):
+        return self.get_record(host_ref)['uuid']
+
+
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
         self._session = session
@@ -123,6 +134,7 @@ class XenAPISession(object):
         self.PBD = PbdOperations(self)
         self.SR = SrOperations(self)
         self.VDI = VdiOperations(self)
+        self.host = HostOperations(self)
 
     def close(self):
         return self.call_xenapi('logout')
@@ -139,18 +151,9 @@ class XenAPISession(object):
     def get_this_host(self):
         return self.call_xenapi('session.get_this_host', self.handle)
 
-    def get_host_record(self, host_ref):
-        return self.call_xenapi('host.get_record', host_ref)
-
-    def get_host_by_uuid(self, host_uuid):
-        return self.call_xenapi('host.get_by_uuid', host_uuid)
-
     # Record based operations
     def is_nfs_sr(self, sr_ref):
         return self.SR.get_record(sr_ref).get('type') == 'nfs'
-
-    def get_host_uuid(self, host_ref):
-        return self.get_host_record(host_ref)['uuid']
 
     # Compound operations
     def unplug_pbds_and_forget_sr(self, sr_ref):
@@ -261,7 +264,7 @@ class NFSBasedVolumeOperations(object):
 
     def connect_volume(self, host_uuid, server, serverpath, sr_uuid, vdi_uuid):
         with self._session_factory.get_session() as session:
-            host_ref = session.get_host_by_uuid(host_uuid)
+            host_ref = session.host.get_by_uuid(host_uuid)
             sr_ref = session.plug_nfs_sr(
                 host_ref,
                 server,
