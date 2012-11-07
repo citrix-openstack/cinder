@@ -78,6 +78,15 @@ class SrOperations(OperationsBase):
             sm_config or dict()
         )
 
+    def get_uuid(self, sr_ref):
+        return self.get_record(sr_ref)['uuid']
+
+    def get_name_label(self, sr_ref):
+        return self.get_record(sr_ref)['name_label']
+
+    def get_name_description(self, sr_ref):
+        return self.get_record(sr_ref)['name_description']
+
 
 class VdiOperations(OperationsBase):
     def get_all(self):
@@ -137,15 +146,6 @@ class XenAPISession(object):
         return self.call_xenapi('host.get_by_uuid', host_uuid)
 
     # Record based operations
-    def get_sr_uuid(self, sr_ref):
-        return self.SR.get_record(sr_ref)['uuid']
-
-    def get_sr_name_label(self, sr_ref):
-        return self.SR.get_record(sr_ref)['name_label']
-
-    def get_sr_name_description(self, sr_ref):
-        return self.SR.get_record(sr_ref)['name_description']
-
     def is_nfs_sr(self, sr_ref):
         return self.SR.get_record(sr_ref).get('type') == 'nfs'
 
@@ -255,7 +255,7 @@ class NFSBasedVolumeOperations(object):
                 vdi_ref = session.create_new_vdi(sr_ref, size)
 
                 return dict(
-                    sr_uuid=session.get_sr_uuid(sr_ref),
+                    sr_uuid=session.SR.get_uuid(sr_ref),
                     vdi_uuid=session.VDI.get_uuid(vdi_ref)
                 )
 
