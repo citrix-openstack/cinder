@@ -36,12 +36,56 @@ class PbdOperations(OperationsBase):
         self.call_xenapi('PBD.plug', pbd_ref)
 
 
+class SrOperations(OperationsBase):
+    def get_all(self):
+        return self.call_xenapi('SR.get_all')
+
+    def get_record(self, sr_ref):
+        return self.call_xenapi('SR.get_record', sr_ref)
+
+    def forget(self, sr_ref):
+        self.call_xenapi('SR.forget', sr_ref)
+
+    def scan(self, sr_ref):
+        self.call_xenapi('SR.scan', sr_ref)
+
+    def create(self, host_ref, device_config, name_label, name_description,
+                  sr_type, physical_size=None, content_type=None,
+                  shared=False, sm_config=None):
+        return self.call_xenapi(
+            'SR.create',
+            host_ref,
+            device_config,
+            physical_size or '0',
+            name_label or '',
+            name_description or '',
+            sr_type,
+            content_type or '',
+            shared,
+            sm_config or dict()
+        )
+
+    def introduce(self, sr_uuid, name_label, name_description, sr_type,
+                     content_type=None, shared=False, sm_config=None):
+        return self.call_xenapi(
+            'SR.introduce',
+            sr_uuid,
+            name_label or '',
+            name_description or '',
+            sr_type,
+            content_type or '',
+            shared,
+            sm_config or dict()
+        )
+
+
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
         self._session = session
         self.exception_to_convert = exception_to_convert
         self.handle = self._session.handle
         self.PBD = PbdOperations(self)
+        self.SR = SrOperations(self)
 
     def close(self):
         return self.call_xenapi('logout')
@@ -58,14 +102,8 @@ class XenAPISession(object):
     def get_this_host(self):
         return self.call_xenapi('session.get_this_host', self.handle)
 
-    def get_srs(self):
-        return self.call_xenapi('SR.get_all')
-
     def get_vdis(self):
         return self.call_xenapi('VDI.get_all')
-
-    def get_sr_record(self, sr_ref):
-        return self.call_xenapi('SR.get_record', sr_ref)
 
     def get_vdi_record(self, vdi_ref):
         return self.call_xenapi('VDI.get_record', vdi_ref)
@@ -73,33 +111,11 @@ class XenAPISession(object):
     def get_host_record(self, host_ref):
         return self.call_xenapi('host.get_record', host_ref)
 
-    def forget_sr(self, sr_ref):
-        self.call_xenapi('SR.forget', sr_ref)
-
-    def scan_sr(self, sr_ref):
-        self.call_xenapi('SR.scan', sr_ref)
-
     def get_vdi_by_uuid(self, vdi_uuid):
         return self.call_xenapi('VDI.get_by_uuid', vdi_uuid)
 
     def get_host_by_uuid(self, host_uuid):
         return self.call_xenapi('host.get_by_uuid', host_uuid)
-
-    def create_sr(self, host_ref, device_config, name_label, name_description,
-                  sr_type, physical_size=None, content_type=None,
-                  shared=False, sm_config=None):
-        return self.call_xenapi(
-            'SR.create',
-            host_ref,
-            device_config,
-            physical_size or '0',
-            name_label or '',
-            name_description or '',
-            sr_type,
-            content_type or '',
-            shared,
-            sm_config or dict()
-        )
 
     def create_vdi(self, sr_ref, size, vdi_type,
                    sharable=False, read_only=False, other_config=None):
@@ -114,44 +130,31 @@ class XenAPISession(object):
             )
         )
 
-    def introduce_sr(self, sr_uuid, name_label, name_description, sr_type,
-                     content_type=None, shared=False, sm_config=None):
-        return self.call_xenapi(
-            'SR.introduce',
-            sr_uuid,
-            name_label or '',
-            name_description or '',
-            sr_type,
-            content_type or '',
-            shared,
-            sm_config or dict()
-        )
-
     # Record based operations
     def get_sr_uuid(self, sr_ref):
-        return self.get_sr_record(sr_ref)['uuid']
+        return self.SR.get_record(sr_ref)['uuid']
 
     def get_sr_name_label(self, sr_ref):
-        return self.get_sr_record(sr_ref)['name_label']
+        return self.SR.get_record(sr_ref)['name_label']
 
     def get_sr_name_description(self, sr_ref):
-        return self.get_sr_record(sr_ref)['name_description']
+        return self.SR.get_record(sr_ref)['name_description']
 
     def get_vdi_uuid(self, vdi_ref):
         return self.get_vdi_record(vdi_ref)['uuid']
 
     def is_nfs_sr(self, sr_ref):
-        return self.get_sr_record(sr_ref).get('type') == 'nfs'
+        return self.SR.get_record(sr_ref).get('type') == 'nfs'
 
     def get_host_uuid(self, host_ref):
         return self.get_host_record(host_ref)['uuid']
 
     # Compound operations
     def unplug_pbds_and_forget_sr(self, sr_ref):
-        sr_rec = self.get_sr_record(sr_ref)
+        sr_rec = self.SR.get_record(sr_ref)
         for pbd_ref in sr_rec.get('PBDs', []):
             self.PBD.unplug(pbd_ref)
-        self.forget_sr(sr_ref)
+        self.SR.forget(sr_ref)
 
     def create_new_vdi(self, sr_ref, size):
         return self.create_vdi(
@@ -173,7 +176,7 @@ class XenAPISession(object):
         name_description = name_description or ''
         sr_type = 'nfs'
 
-        sr_ref = self.create_sr(
+        sr_ref = self.SR.create(
             host_ref,
             device_config,
             name_label,
@@ -193,7 +196,7 @@ class XenAPISession(object):
         )
         sr_type = 'nfs'
 
-        sr_ref = self.introduce_sr(
+        sr_ref = self.SR.introduce(
             sr_uuid,
             name_label,
             name_description,
@@ -262,7 +265,7 @@ class NFSBasedVolumeOperations(object):
                 serverpath,
                 sr_uuid
             )
-            session.scan_sr(sr_ref)
+            session.SR.scan(sr_ref)
             return session.get_vdi_by_uuid(vdi_uuid)
 
     def disconnect_volume(self, vdi_ref):
