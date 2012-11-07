@@ -7,11 +7,36 @@ class XenAPIException(Exception):
         self.original_exception = original_exception
 
 
+class PbdOperations(object):
+    def __init__(self, xenapi_session):
+        self.session = xenapi_session
+
+    def get_all(self):
+        return self.session.call_xenapi('PBD.get_all')
+
+    def unplug(self, pbd_ref):
+        self.session.call_xenapi('PBD.unplug', pbd_ref)
+
+    def create(self, host_ref, sr_ref, device_config):
+        return self.session.call_xenapi(
+            'PBD.create',
+            dict(
+                host=host_ref,
+                SR=sr_ref,
+                device_config=device_config
+            )
+        )
+
+    def plug(self, pbd_ref):
+        self.session.call_xenapi('PBD.plug', pbd_ref)
+
+
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
         self._session = session
         self.exception_to_convert = exception_to_convert
         self.handle = self._session.handle
+        self.PBD = PbdOperations(self)
 
     def close(self):
         return self.call_xenapi('logout')
@@ -27,9 +52,6 @@ class XenAPISession(object):
 
     def get_this_host(self):
         return self.call_xenapi('session.get_this_host', self.handle)
-
-    def get_pbds(self):
-        return self.call_xenapi('PBD.get_all')
 
     def get_srs(self):
         return self.call_xenapi('SR.get_all')
@@ -48,9 +70,6 @@ class XenAPISession(object):
 
     def forget_sr(self, sr_ref):
         self.call_xenapi('SR.forget', sr_ref)
-
-    def unplug_pbd(self, pbd_ref):
-        self.call_xenapi('PBD.unplug', pbd_ref)
 
     def scan_sr(self, sr_ref):
         self.call_xenapi('SR.scan', sr_ref)
@@ -103,19 +122,6 @@ class XenAPISession(object):
             sm_config or dict()
         )
 
-    def create_pbd(self, host_ref, sr_ref, device_config):
-        return self.call_xenapi(
-            'PBD.create',
-            dict(
-                host=host_ref,
-                SR=sr_ref,
-                device_config=device_config
-            )
-        )
-
-    def plug_pbd(self, pbd_ref):
-        self.call_xenapi('PBD.plug', pbd_ref)
-
     # Record based operations
     def get_sr_uuid(self, sr_ref):
         return self.get_sr_record(sr_ref)['uuid']
@@ -139,7 +145,7 @@ class XenAPISession(object):
     def unplug_pbds_and_forget_sr(self, sr_ref):
         sr_rec = self.get_sr_record(sr_ref)
         for pbd_ref in sr_rec.get('PBDs', []):
-            self.unplug_pbd(pbd_ref)
+            self.PBD.unplug(pbd_ref)
         self.forget_sr(sr_ref)
 
     def create_new_vdi(self, sr_ref, size):
@@ -189,13 +195,13 @@ class XenAPISession(object):
             sr_type,
         )
 
-        pbd_ref = self.create_pbd(
+        pbd_ref = self.PBD.create(
             host_ref,
             sr_ref,
             device_config
         )
 
-        self.plug_pbd(pbd_ref)
+        self.PBD.plug(pbd_ref)
 
         return sr_ref
 
