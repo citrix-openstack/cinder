@@ -242,17 +242,17 @@ class NFSBasedVolumeOperations(object):
                     vdi_uuid=session.get_vdi_uuid(vdi_ref)
                 )
 
-    def connect_volume(self, host_uuid, server, serverpath, volume_details):
+    def connect_volume(self, host_uuid, server, serverpath, sr_uuid, vdi_uuid):
         with self._session_factory.get_session() as session:
             host_ref = session.get_host_by_uuid(host_uuid)
             sr_ref = session.plug_nfs_sr(
                 host_ref,
                 server,
                 serverpath,
-                volume_details['sr_uuid']
+                sr_uuid
             )
             session.scan_sr(sr_ref)
-            return session.get_vdi_by_uuid(volume_details['vdi_uuid'])
+            return session.get_vdi_by_uuid(vdi_uuid)
 
     def disconnect_volume(self, vdi_ref):
         with self._session_factory.get_session() as session:
