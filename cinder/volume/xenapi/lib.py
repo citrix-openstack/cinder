@@ -129,7 +129,7 @@ class HostOperations(OperationsBase):
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
         self._session = session
-        self.exception_to_convert = exception_to_convert
+        self._exception_to_convert = exception_to_convert
         self.handle = self._session.handle
         self.PBD = PbdOperations(self)
         self.SR = SrOperations(self)
@@ -142,7 +142,7 @@ class XenAPISession(object):
     def call_xenapi(self, method, *args):
         try:
             return self._session.xenapi_request(method, args)
-        except self.exception_to_convert as e:
+        except self._exception_to_convert as e:
             raise XenAPIException(e)
 
     def get_pool(self):
@@ -151,11 +151,8 @@ class XenAPISession(object):
     def get_this_host(self):
         return self.call_xenapi('session.get_this_host', self.handle)
 
-    # Record based operations
-    def is_nfs_sr(self, sr_ref):
-        return self.SR.get_record(sr_ref).get('type') == 'nfs'
 
-    # Compound operations
+class CompoundOperationsMixIn(object):
     def unplug_pbds_and_forget_sr(self, sr_ref):
         sr_rec = self.SR.get_record(sr_ref)
         for pbd_ref in sr_rec.get('PBDs', []):
@@ -169,7 +166,11 @@ class XenAPISession(object):
                 'User',
         )
 
-    # NFS specific
+
+class NFSOperationsMixIn(object):
+    def is_nfs_sr(self, sr_ref):
+        return self.SR.get_record(sr_ref).get('type') == 'nfs'
+
     @contextlib.contextmanager
     def new_sr_on_nfs(self, host_ref, server, serverpath,
                       name_label=None, name_description=None):
@@ -228,11 +229,17 @@ class ContextAwareSession(XenAPISession):
         self.close()
 
 
+class OpenStackXenAPISession(ContextAwareSession,
+                             CompoundOperationsMixIn,
+                             NFSOperationsMixIn):
+    pass
+
+
 def connect(url, user, password):
     import XenAPI
     session = XenAPI.Session(url)
     session.login_with_password(user, password)
-    return ContextAwareSession(session, XenAPI.Failure)
+    return OpenStackXenAPISession(session, XenAPI.Failure)
 
 
 class SessionFactory(object):

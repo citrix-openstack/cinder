@@ -1,4 +1,4 @@
-from cinder.volume import driver
+from cinder.volume import xenapi_sm as driver
 from cinder.volume.xenapi import lib
 import unittest
 import mox
