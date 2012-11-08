@@ -94,3 +94,37 @@ class DriverTestCase(unittest.TestCase):
     def test_remove_export_does_not_raise_exception(self):
         drv = driver.XenAPINFSDriver()
         drv.remove_export('context', 'volume')
+
+    def test_initialize_connection(self):
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(driver, 'FLAGS')
+        driver.FLAGS.xenapi_nfs_server = 'server'
+        driver.FLAGS.xenapi_nfs_serverpath = 'path'
+
+        drv = driver.XenAPINFSDriver()
+
+        mock.ReplayAll()
+        result = drv.initialize_connection(
+            dict(
+                display_name='name',
+                display_description='desc',
+                provider_location='sr_uuid/vdi_uuid'),
+            'connector'
+        )
+        mock.VerifyAll()
+
+        self.assertEquals(
+            dict(
+                driver_volume_type='xensm',
+                data=dict(
+                    name_label='name',
+                    name_description='desc',
+                    sr_uuid='sr_uuid',
+                    vdi_uuid='vdi_uuid',
+                    sr_type='nfs',
+                    introduce_sr_keys=['sr_type']
+                )
+            ),
+            result
+        )

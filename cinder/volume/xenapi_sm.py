@@ -66,12 +66,23 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def remove_export(self, context, volume):
         pass
 
+    def initialize_connection(self, volume, connector):
+        sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+
+        return dict(
+            driver_volume_type='xensm',
+            data=dict(
+                name_label=volume['display_name'],
+                name_description=volume['display_description'],
+                sr_uuid=sr_uuid,
+                vdi_uuid=vdi_uuid,
+                sr_type='nfs',
+                introduce_sr_keys=['sr_type']
+            )
+        )
+
     def check_for_setup_error(self):
         """To override superclass' method"""
-
-    def initialize_connection(self, volume, connector):
-        """Allow connection to connector and return connection info."""
-        raise NotImplementedError()
 
     def create_volume_from_snapshot(self, volume, snapshot):
         raise NotImplementedError()
