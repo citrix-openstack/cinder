@@ -86,3 +86,11 @@ class DriverTestCase(unittest.TestCase):
         result = drv.delete_volume(dict(
             provider_location='sr_uuid/vdi_uuid'))
         mock.VerifyAll()
+
+    def test_create_export_does_not_raise_exception(self):
+        drv = driver.XenAPINFSDriver()
+        drv.create_export('context', 'volume')
+
+    def test_remove_export_does_not_raise_exception(self):
+        drv = driver.XenAPINFSDriver()
+        drv.remove_export('context', 'volume')
