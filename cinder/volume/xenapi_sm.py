@@ -51,6 +51,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
         location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
         return dict(provider_location=location)
 
+    def create_export(self, context, volume):
+        pass
+
     def delete_volume(self, volume):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
         self.nfs_ops.delete_volume(
@@ -59,6 +62,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
             sr_uuid,
             vdi_uuid
         )
+
+    def remove_export(self, context, volume):
+        pass
 
     def check_for_setup_error(self):
         """To override superclass' method"""
