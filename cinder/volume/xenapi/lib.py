@@ -87,6 +87,9 @@ class SrOperations(OperationsBase):
     def get_name_description(self, sr_ref):
         return self.get_record(sr_ref)['name_description']
 
+    def destroy(self, sr_ref):
+        self.call_xenapi('SR.destroy', sr_ref)
+
 
 class VdiOperations(OperationsBase):
     def get_all(self):
@@ -113,6 +116,9 @@ class VdiOperations(OperationsBase):
                 other_config=other_config or dict()
             )
         )
+
+    def destroy(self, vdi_ref):
+        self.call_xenapi('VDI.destroy', vdi_ref)
 
 
 class HostOperations(OperationsBase):
@@ -153,10 +159,13 @@ class XenAPISession(object):
 
 
 class CompoundOperationsMixIn(object):
-    def unplug_pbds_and_forget_sr(self, sr_ref):
+    def unplug_pbds_from_sr(self, sr_ref):
         sr_rec = self.SR.get_record(sr_ref)
         for pbd_ref in sr_rec.get('PBDs', []):
             self.PBD.unplug(pbd_ref)
+
+    def unplug_pbds_and_forget_sr(self, sr_ref):
+        self.unplug_pbds_from_sr(sr_ref)
         self.SR.forget(sr_ref)
 
     def create_new_vdi(self, sr_ref, size):
@@ -167,6 +176,7 @@ class CompoundOperationsMixIn(object):
         )
 
 
+# TODO: this is not a mixin, as it depends on CompoundOperationsMixIn
 class NFSOperationsMixIn(object):
     def is_nfs_sr(self, sr_ref):
         return self.SR.get_record(sr_ref).get('type') == 'nfs'
@@ -220,6 +230,18 @@ class NFSOperationsMixIn(object):
 
         return sr_ref
 
+    def connect_volume(self, server, serverpath, sr_uuid, vdi_uuid):
+        host_ref = self.get_this_host()
+        sr_ref = self.plug_nfs_sr(
+            host_ref,
+            server,
+            serverpath,
+            sr_uuid
+        )
+        self.SR.scan(sr_ref)
+        vdi_ref = self.VDI.get_by_uuid(vdi_uuid)
+        return dict(sr_ref=sr_ref, vdi_ref=vdi_ref)
+
 
 class ContextAwareSession(XenAPISession):
     def __enter__(self):
@@ -269,20 +291,26 @@ class NFSBasedVolumeOperations(object):
                     vdi_uuid=session.VDI.get_uuid(vdi_ref)
                 )
 
-    def connect_volume(self, host_uuid, server, serverpath, sr_uuid, vdi_uuid):
+    def delete_volume(self, server, serverpath, sr_uuid, vdi_uuid):
         with self._session_factory.get_session() as session:
-            host_ref = session.host.get_by_uuid(host_uuid)
-            sr_ref = session.plug_nfs_sr(
-                host_ref,
-                server,
-                serverpath,
-                sr_uuid
-            )
-            session.SR.scan(sr_ref)
-            return session.VDI.get_by_uuid(vdi_uuid)
+            refs = session.connect_volume(
+                server, serverpath, sr_uuid, vdi_uuid)
 
-    def disconnect_volume(self, vdi_ref):
+            session.VDI.destroy(refs['vdi_ref'])
+            sr_ref = refs['sr_ref']
+            session.unplug_pbds_from_sr(sr_ref)
+            session.SR.destroy(sr_ref)
+
+    def connect_volume(self, server, serverpath, sr_uuid, vdi_uuid):
         with self._session_factory.get_session() as session:
+            refs = session.connect_volume(
+                server, serverpath, sr_uuid, vdi_uuid)
+
+            return session.VDI.get_uuid(refs['vdi_ref'])
+
+    def disconnect_volume(self, vdi_uuid):
+        with self._session_factory.get_session() as session:
+            vdi_ref = session.VDI.get_by_uuid(vdi_uuid)
             vdi_rec = session.VDI.get_record(vdi_ref)
             sr_ref = vdi_rec['SR']
             session.unplug_pbds_and_forget_sr(sr_ref)
