@@ -40,9 +40,6 @@ class XenAPINFSDriver(driver.VolumeDriver):
         )
         self.nfs_ops = xenapi_lib.NFSBasedVolumeOperations(session_factory)
 
-    def check_for_setup_error(self):
-        """To override superclass' method"""
-
     def create_volume(self, volume):
         volume_details = self.nfs_ops.create_volume(
             FLAGS.xenapi_nfs_server,
@@ -54,14 +51,23 @@ class XenAPINFSDriver(driver.VolumeDriver):
         location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
         return dict(provider_location=location)
 
+    def delete_volume(self, volume):
+        sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+        self.nfs_ops.delete_volume(
+            FLAGS.xenapi_nfs_server,
+            FLAGS.xenapi_nfs_serverpath,
+            sr_uuid,
+            vdi_uuid
+        )
+
+    def check_for_setup_error(self):
+        """To override superclass' method"""
+
     def initialize_connection(self, volume, connector):
         """Allow connection to connector and return connection info."""
         raise NotImplementedError()
 
     def create_volume_from_snapshot(self, volume, snapshot):
-        raise NotImplementedError()
-
-    def delete_volume(self, volume):
         raise NotImplementedError()
 
     def create_snapshot(self, snapshot):

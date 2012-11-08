@@ -158,7 +158,7 @@ class XenAPISession(object):
         return self.call_xenapi('session.get_this_host', self.handle)
 
 
-class CompoundOperationsMixIn(object):
+class CompoundOperations(object):
     def unplug_pbds_from_sr(self, sr_ref):
         sr_rec = self.SR.get_record(sr_ref)
         for pbd_ref in sr_rec.get('PBDs', []):
@@ -176,8 +176,7 @@ class CompoundOperationsMixIn(object):
         )
 
 
-# TODO: this is not a mixin, as it depends on CompoundOperationsMixIn
-class NFSOperationsMixIn(object):
+class NFSOperationsMixIn(CompoundOperations):
     def is_nfs_sr(self, sr_ref):
         return self.SR.get_record(sr_ref).get('type') == 'nfs'
 
@@ -252,7 +251,6 @@ class ContextAwareSession(XenAPISession):
 
 
 class OpenStackXenAPISession(ContextAwareSession,
-                             CompoundOperationsMixIn,
                              NFSOperationsMixIn):
     pass
 

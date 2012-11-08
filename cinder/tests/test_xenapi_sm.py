@@ -53,12 +53,12 @@ class DriverTestCase(unittest.TestCase):
         drv = driver.XenAPINFSDriver()
         drv.nfs_ops = ops
 
-        conn_data = dict(
+        volume_details = dict(
             sr_uuid='sr_uuid',
             vdi_uuid='vdi_uuid'
         )
         ops.create_volume(
-            'server', 'path', 1, 'name', 'desc').AndReturn(conn_data)
+            'server', 'path', 1, 'name', 'desc').AndReturn(volume_details)
 
         mock.ReplayAll()
         result = drv.create_volume(dict(
@@ -68,3 +68,21 @@ class DriverTestCase(unittest.TestCase):
         self.assertEquals(dict(
                 provider_location='sr_uuid/vdi_uuid'
             ), result)
+
+    def test_delete_volume(self):
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(driver, 'FLAGS')
+        driver.FLAGS.xenapi_nfs_server = 'server'
+        driver.FLAGS.xenapi_nfs_serverpath = 'path'
+
+        ops = mock.CreateMock(lib.NFSBasedVolumeOperations)
+        drv = driver.XenAPINFSDriver()
+        drv.nfs_ops = ops
+
+        ops.delete_volume('server', 'path', 'sr_uuid', 'vdi_uuid')
+
+        mock.ReplayAll()
+        result = drv.delete_volume(dict(
+            provider_location='sr_uuid/vdi_uuid'))
+        mock.VerifyAll()
