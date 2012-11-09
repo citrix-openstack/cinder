@@ -84,6 +84,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
             )
         )
 
+    def terminate_connection(self, volume, connector, force=False, **kwargs):
+        pass
+
     def check_for_setup_error(self):
         """To override superclass' method"""
 
