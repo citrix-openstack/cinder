@@ -73,8 +73,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
         return dict(
             driver_volume_type='xensm',
             data=dict(
-                name_label=volume['display_name'],
-                name_description=volume['display_description'],
+                name_label=volume['display_name'] or '',
+                name_description=volume['display_description'] or '',
                 sr_uuid=sr_uuid,
                 vdi_uuid=vdi_uuid,
                 sr_type='nfs',

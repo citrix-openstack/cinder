@@ -130,3 +130,41 @@ class DriverTestCase(unittest.TestCase):
             ),
             result
         )
+
+    def test_initialize_connection_null_values(self):
+        mock = mox.Mox()
+
+        mock.StubOutWithMock(driver, 'FLAGS')
+        driver.FLAGS.xenapi_nfs_server = 'server'
+        driver.FLAGS.xenapi_nfs_serverpath = 'path'
+
+        drv = driver.XenAPINFSDriver()
+
+        mock.ReplayAll()
+        result = drv.initialize_connection(
+            dict(
+                display_name=None,
+                display_description=None,
+                provider_location='sr_uuid/vdi_uuid'),
+            'connector'
+        )
+        mock.VerifyAll()
+
+        self.assertEquals(
+            dict(
+                driver_volume_type='xensm',
+                data=dict(
+                    name_label='',
+                    name_description='',
+                    sr_uuid='sr_uuid',
+                    vdi_uuid='vdi_uuid',
+                    sr_type='nfs',
+                    server='server',
+                    serverpath='path',
+                    introduce_sr_keys=['sr_type', 'server', 'serverpath']
+                )
+            ),
+            result
+        )
+
+
