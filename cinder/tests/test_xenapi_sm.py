@@ -123,7 +123,9 @@ class DriverTestCase(unittest.TestCase):
                     sr_uuid='sr_uuid',
                     vdi_uuid='vdi_uuid',
                     sr_type='nfs',
-                    introduce_sr_keys=['sr_type']
+                    server='server',
+                    serverpath='path',
+                    introduce_sr_keys=['sr_type', 'server', 'serverpath']
                 )
             ),
             result

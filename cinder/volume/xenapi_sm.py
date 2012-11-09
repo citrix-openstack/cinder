@@ -56,6 +56,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
     def delete_volume(self, volume):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+
         self.nfs_ops.delete_volume(
             FLAGS.xenapi_nfs_server,
             FLAGS.xenapi_nfs_serverpath,
@@ -77,7 +78,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
                 sr_uuid=sr_uuid,
                 vdi_uuid=vdi_uuid,
                 sr_type='nfs',
-                introduce_sr_keys=['sr_type']
+                server=FLAGS.xenapi_nfs_server,
+                serverpath=FLAGS.xenapi_nfs_serverpath,
+                introduce_sr_keys=['sr_type', 'server', 'serverpath']
             )
         )
 
