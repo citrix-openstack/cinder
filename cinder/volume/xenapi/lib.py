@@ -109,7 +109,7 @@ class VdiOperations(OperationsBase):
         return self.call_xenapi('VDI.create',
             dict(
                 SR=sr_ref,
-                virtual_size=str(size),
+                virtual_size=str(to_bytes(size)),
                 type=vdi_type,
                 sharable=sharable,
                 read_only=read_only,
@@ -119,6 +119,10 @@ class VdiOperations(OperationsBase):
 
     def destroy(self, vdi_ref):
         self.call_xenapi('VDI.destroy', vdi_ref)
+
+
+def to_bytes(size_in_gigs):
+    return size_in_gigs * 1024 * 1024 * 1024
 
 
 class HostOperations(OperationsBase):
