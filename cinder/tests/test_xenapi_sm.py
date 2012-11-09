@@ -166,5 +166,3 @@ class DriverTestCase(unittest.TestCase):
             ),
             result
         )
-
-
