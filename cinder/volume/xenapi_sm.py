@@ -92,3 +92,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
     def delete_snapshot(self, snapshot):
         raise NotImplementedError()
+
+    def ensure_export(self, context, volume):
+        pass
+
+
