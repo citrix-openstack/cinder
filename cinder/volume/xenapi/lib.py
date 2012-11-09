@@ -109,7 +109,7 @@ class VdiOperations(OperationsBase):
         return self.call_xenapi('VDI.create',
             dict(
                 SR=sr_ref,
-                virtual_size=str(to_bytes(size)),
+                virtual_size=str(size),
                 type=vdi_type,
                 sharable=sharable,
                 read_only=read_only,
@@ -121,16 +121,9 @@ class VdiOperations(OperationsBase):
         self.call_xenapi('VDI.destroy', vdi_ref)
 
 
-def to_bytes(size_in_gigs):
-    return size_in_gigs * 1024 * 1024 * 1024
-
-
 class HostOperations(OperationsBase):
     def get_record(self, host_ref):
         return self.call_xenapi('host.get_record', host_ref)
-
-    def get_by_uuid(self, host_uuid):
-        return self.call_xenapi('host.get_by_uuid', host_uuid)
 
     def get_uuid(self, host_ref):
         return self.get_record(host_ref)['uuid']
@@ -172,12 +165,16 @@ class CompoundOperations(object):
         self.unplug_pbds_from_sr(sr_ref)
         self.SR.forget(sr_ref)
 
-    def create_new_vdi(self, sr_ref, size):
+    def create_new_vdi(self, sr_ref, size_in_gigabytes):
         return self.VDI.create(
                 sr_ref,
-                size,
+                to_bytes(size_in_gigabytes),
                 'User',
         )
+
+
+def to_bytes(size_in_gigs):
+    return size_in_gigs * 1024 * 1024 * 1024
 
 
 class NFSOperationsMixIn(CompoundOperations):
