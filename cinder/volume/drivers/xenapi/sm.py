@@ -57,6 +57,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             FLAGS.xenapi_connection_password
         )
         self.nfs_ops = xenapi_lib.NFSBasedVolumeOperations(session_factory)
+        self.context = context
 
     def create_cloned_volume(self, volume, src_vref):
         raise NotImplementedError()
@@ -112,13 +113,29 @@ class XenAPINFSDriver(driver.VolumeDriver):
         """To override superclass' method"""
 
     def create_volume_from_snapshot(self, volume, snapshot):
-        raise NotImplementedError()
+        return self._copy_volume(snapshot)
 
     def create_snapshot(self, snapshot):
-        raise NotImplementedError()
+        volume_id = snapshot['volume_id']
+        volume = self.db.volume_get(volume_id, self.context)
+        return self._copy_volume(volume)
+
+    def _copy_volume(self, volume):
+        sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+
+        volume_details = self.nfs_ops.copy_volume(
+            FLAGS.xenapi_nfs_server,
+            FLAGS.xenapi_nfs_serverpath,
+            sr_uuid,
+            vdi_uuid,
+            snapshot['display_name'],
+            snapshot['display_description']
+        )
+        location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
+        return dict(provider_location=location)
 
     def delete_snapshot(self, snapshot):
-        raise NotImplementedError()
+        self.delete_volume(snapshot)
 
     def ensure_export(self, context, volume):
         pass

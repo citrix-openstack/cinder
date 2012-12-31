@@ -316,6 +316,8 @@ class Snapshot(BASE, CinderBase):
     display_name = Column(String(255))
     display_description = Column(String(255))
 
+    provider_location = Column(String(255))
+
 
 class IscsiTarget(BASE, CinderBase):
     """Represents an iscsi target for a given host."""
