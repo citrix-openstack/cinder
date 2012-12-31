@@ -333,7 +333,8 @@ class NFSBasedVolumeOperations(object):
             sr_ref = vdi_rec['SR']
             session.unplug_pbds_and_forget_sr(sr_ref)
 
-    def copy_volume(self, server, serverpath, sr_uuid, vdi_uuid, name=None, description=None):
+    def copy_volume(self, server, serverpath, sr_uuid, vdi_uuid,
+                    name=None, description=None):
         with self._session_factory.get_session() as session:
             src_refs = session.connect_volume(
                 server, serverpath, sr_uuid, vdi_uuid)
@@ -341,7 +342,8 @@ class NFSBasedVolumeOperations(object):
 
             with session.new_sr_on_nfs(host_ref, server, serverpath,
                                        name, description) as target_sr_ref:
-                target_vdi_ref = session.copy_vdi_to_sr(src_refs['vdi_ref'], target_sr_ref)
+                target_vdi_ref = session.copy_vdi_to_sr(
+                    src_refs['vdi_ref'], target_sr_ref)
 
                 dst_refs = dict(
                     sr_uuid=session.SR.get_uuid(target_sr_ref),
