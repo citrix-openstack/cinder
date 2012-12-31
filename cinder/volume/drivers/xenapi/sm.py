@@ -117,7 +117,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
     def create_snapshot(self, snapshot):
         volume_id = snapshot['volume_id']
-        volume = self.db.volume_get(volume_id, self.context)
+        volume = self.db.volume_get(self.context, volume_id)
         return self._copy_volume(volume)
 
     def _copy_volume(self, volume):
@@ -128,8 +128,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
             FLAGS.xenapi_nfs_serverpath,
             sr_uuid,
             vdi_uuid,
-            snapshot['display_name'],
-            snapshot['display_description']
+            volume['display_name'],
+            volume['display_description']
         )
         location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
         return dict(provider_location=location)
