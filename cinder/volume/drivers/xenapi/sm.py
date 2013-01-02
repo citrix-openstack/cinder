@@ -113,14 +113,16 @@ class XenAPINFSDriver(driver.VolumeDriver):
         """To override superclass' method"""
 
     def create_volume_from_snapshot(self, volume, snapshot):
-        return self._copy_volume(snapshot)
+        return self._copy_volume(
+            snapshot, volume['display_name'], volume['name_description'])
 
     def create_snapshot(self, snapshot):
         volume_id = snapshot['volume_id']
         volume = self.db.volume_get(self.context, volume_id)
-        return self._copy_volume(volume)
+        return self._copy_volume(
+            volume, snapshot['display_name'], snapshot['display_description'])
 
-    def _copy_volume(self, volume):
+    def _copy_volume(self, volume, target_name, target_desc):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
         volume_details = self.nfs_ops.copy_volume(
@@ -128,8 +130,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
             FLAGS.xenapi_nfs_serverpath,
             sr_uuid,
             vdi_uuid,
-            volume['display_name'],
-            volume['display_description']
+            target_name,
+            target_desc
         )
         location = "%(sr_uuid)s/%(vdi_uuid)s" % volume_details
         return dict(provider_location=location)
