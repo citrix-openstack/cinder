@@ -191,7 +191,6 @@ class DriverTestCase(unittest.TestCase):
         ops = mock.CreateMock(lib.NFSBasedVolumeOperations)
         db = mock.CreateMock(db_api)
         drv.nfs_ops = ops
-        drv.context = "context"
         drv.db = db
 
         mock.StubOutWithMock(driver, 'FLAGS')
@@ -206,10 +205,8 @@ class DriverTestCase(unittest.TestCase):
         snapshot = dict(
             volume_id="volume-id",
             display_name="snapshot-name",
-            display_description="snapshot-desc")
-
-        drv.db.volume_get("context", "volume-id").AndReturn(
-            dict(provider_location="sr-uuid/vdi-uuid"))
+            display_description="snapshot-desc",
+            volume=dict(provider_location="sr-uuid/vdi-uuid"))
 
         drv.nfs_ops.copy_volume(
             "server", "serverpath", "sr-uuid", "vdi-uuid",

@@ -57,7 +57,6 @@ class XenAPINFSDriver(driver.VolumeDriver):
             FLAGS.xenapi_connection_password
         )
         self.nfs_ops = xenapi_lib.NFSBasedVolumeOperations(session_factory)
-        self.context = context
 
     def create_cloned_volume(self, volume, src_vref):
         raise NotImplementedError()
@@ -118,7 +117,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
     def create_snapshot(self, snapshot):
         volume_id = snapshot['volume_id']
-        volume = self.db.volume_get(self.context, volume_id)
+        volume = snapshot['volume']
         return self._copy_volume(
             volume, snapshot['display_name'], snapshot['display_description'])
 
