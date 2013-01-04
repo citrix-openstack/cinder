@@ -14,12 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import Column, DateTime, Text, Boolean
-from sqlalchemy import MetaData, Integer, String, Table, ForeignKey
-
-from cinder.openstack.common import log as logging
-
-LOG = logging.getLogger(__name__)
+from sqlalchemy import Column
+from sqlalchemy import MetaData, String, Table
 
 
 def upgrade(migrate_engine):
