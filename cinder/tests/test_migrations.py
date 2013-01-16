@@ -351,28 +351,27 @@ class TestMigrations(test.TestCase):
             self.assertTrue(isinstance(volumes.c.source_volid.type,
                                        sqlalchemy.types.VARCHAR))
 
-    def metadatas_upgraded_to(self, revision):
-        for (key, engine) in self.engines.items():
-            migration_api.version_control(engine,
-                                          TestMigrations.REPOSITORY,
-                                          migration.INIT_VERSION)
-            migration_api.upgrade(engine, TestMigrations.REPOSITORY, revision)
-            metadata = sqlalchemy.schema.MetaData()
-            metadata.bind = engine
-            yield metadata
-
-    def metadatas_downgraded_from(self, revision):
+    def _metadatas(self, upgrade_to, downgrade_to=None):
         for (key, engine) in self.engines.items():
             migration_api.version_control(engine,
                                           TestMigrations.REPOSITORY,
                                           migration.INIT_VERSION)
             migration_api.upgrade(engine,
                                   TestMigrations.REPOSITORY,
-                                  revision)
+                                  upgrade_to)
+
+            if downgrade_to is not None:
+                migration_api.downgrade(engine, TestMigrations.REPOSITORY, downgrade_to)
+
             metadata = sqlalchemy.schema.MetaData()
-            migration_api.downgrade(engine, TestMigrations.REPOSITORY, revision - 1)
             metadata.bind = engine
             yield metadata
+
+    def metadatas_upgraded_to(self, revision):
+        return self._metadatas(revision)
+
+    def metadatas_downgraded_from(self, revision):
+        return self._metadatas(revision, revision - 1)
 
     def test_upgrade_006_adds_provider_location(self):
         for metadata in self.metadatas_upgraded_to(6):
