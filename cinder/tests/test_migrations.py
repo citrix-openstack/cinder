@@ -361,7 +361,8 @@ class TestMigrations(test.TestCase):
                                   upgrade_to)
 
             if downgrade_to is not None:
-                migration_api.downgrade(engine, TestMigrations.REPOSITORY, downgrade_to)
+                migration_api.downgrade(
+                    engine, TestMigrations.REPOSITORY, downgrade_to)
 
             metadata = sqlalchemy.schema.MetaData()
             metadata.bind = engine
@@ -375,17 +376,13 @@ class TestMigrations(test.TestCase):
 
     def test_upgrade_006_adds_provider_location(self):
         for metadata in self.metadatas_upgraded_to(6):
-            snapshots = sqlalchemy.Table('snapshots',
-                                       metadata,
-                                       autoload=True)
+            snapshots = sqlalchemy.Table('snapshots', metadata, autoload=True)
             self.assertTrue(isinstance(snapshots.c.provider_location.type,
                                        sqlalchemy.types.VARCHAR))
 
     def test_downgrade_006_removes_provider_location(self):
         for metadata in self.metadatas_downgraded_from(6):
-            snapshots = sqlalchemy.Table('snapshots',
-                                       metadata,
-                                       autoload=True)
+            snapshots = sqlalchemy.Table('snapshots', metadata, autoload=True)
 
             self.assertTrue('provider_location' not in snapshots.c)
 
