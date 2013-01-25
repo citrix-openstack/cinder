@@ -148,12 +148,16 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
+        MAX_VDI_CHAIN_SIZE = 16
+        uuid_stack = [str(uuid.uuid4()) for i in xrange(MAX_VDI_CHAIN_SIZE)]
+
         LOG.error("sr_uuid: %s", sr_uuid)
         LOG.error("vdi_uuid: %s", vdi_uuid)
         LOG.error("image_id: %s", image_id)
         gcw = glance_client_wrapper = image_service._client
 
         LOG.error("auth_token: %s", context.auth_token)
+        LOG.error("uuid_stack: %s", uuid_stack)
 
         api_servers = glance.get_api_servers()
         glance_host, glance_port, glance_use_ssl = api_servers.next()
