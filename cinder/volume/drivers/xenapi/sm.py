@@ -179,7 +179,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             glance_use_ssl=glance_use_ssl,
             uuid_stack=uuid_stack,
             sr_path="/var/run/sr-mount/" + sr_uuid,
-            auth_token=contex.auth_token)
+            auth_token=context.auth_token)
 
         args = dict(params=pickle.dumps(plugin_params))
 
