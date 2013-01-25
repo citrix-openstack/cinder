@@ -147,6 +147,11 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def ensure_export(self, context, volume):
         pass
 
+    def clone_image(self, volume, image_location):
+        LOG.error("clone_image")
+        LOG.error("image_location: %s", image_location)
+        return False
+
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
@@ -167,6 +172,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
         LOG.error("glance_host: %s", glance_host)
         LOG.error("glance_port: %s", glance_port)
         LOG.error("glance_use_ssl: %s", glance_use_ssl)
+
+        # Connect the volume
         raise NotImplementedError()
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
