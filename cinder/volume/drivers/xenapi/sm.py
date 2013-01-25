@@ -190,7 +190,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             vdi_uuid)
 
         try:
-            result = self.nfs_ops.call_plugin('glance', 'download_vhd', dict(params="kk"))
+            result = self.nfs_ops.call_plugin('glance', 'download_vhd', args)
             LOG.error('Plugin returned with: %s', result)
         except Exception as e:
             LOG.error("Exception happened")
