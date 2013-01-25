@@ -193,8 +193,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
             self.nfs_ops.call_plugin('glance', 'download_vhd', args)
         except Exception as e:
             LOG.error(e)
-
-        self.nfs_ops.disconnect_volume(vdi_uuid)
+        finally:
+            self.nfs_ops.disconnect_volume(vdi_uuid)
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
         raise NotImplementedError()
