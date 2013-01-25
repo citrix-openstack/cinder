@@ -148,9 +148,9 @@ class HostOperations(OperationsBase):
 
     def call_plugin(self, host_ref, plugin, function, args):
         try:
-            return self._session.host.call_plugin(
+            return self.session.host.call_plugin(
                 host_ref, plugin, function, args)
-        except self._session._exception_to_convert as e:
+        except self.session._exception_to_convert as e:
             raise XenAPIException(e)
 
 
