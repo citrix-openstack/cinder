@@ -148,15 +148,15 @@ class XenAPINFSDriver(driver.VolumeDriver):
         LOG.error("image_id: %s", image_id)
         gcw = glance_client_wrapper = image_service._client
 
+        LOG.error("auth_token: %s", context.auth_token)
+
         glance_host = gcw.host
         glance_port = gcw.port
         glance_use_ssl = gcw.use_ssl
-        auth_token = "??"
 
         LOG.error("glance_host: %s", glance_host)
         LOG.error("glance_port: %s", glance_port)
         LOG.error("glance_use_ssl: %s", glance_use_ssl)
-        LOG.error("auth_token: %s", auth_token)
         raise NotImplementedError()
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
