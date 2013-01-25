@@ -188,9 +188,11 @@ class VolumeManager(manager.SchedulerDependentManager):
                 cloned = self.driver.clone_image(volume_ref, image_location)
                 if not cloned:
                     model_update = self.driver.create_volume(volume_ref)
+                    LOG.debug('Volume created, image needs to be downloaded')
                     status = 'downloading'
 
             if model_update:
+                LOG.debug('Update volume with %s', model_update)
                 self.db.volume_update(context, volume_ref['id'], model_update)
 
             LOG.debug(_("volume %s: creating export"), volume_ref['name'])
