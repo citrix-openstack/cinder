@@ -172,6 +172,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
         LOG.error("glance_port: %s", glance_port)
         LOG.error("glance_use_ssl: %s", glance_use_ssl)
 
+        auth_token = context.auth_token
+        auth_token = "ll"
         plugin_params = dict(
             image_id=image_id,
             glance_host=glance_host,
@@ -179,7 +181,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             glance_use_ssl=glance_use_ssl,
             uuid_stack=uuid_stack,
             sr_path="/var/run/sr-mount/" + sr_uuid,
-            auth_token=context.auth_token)
+            auth_token=auth_token)
 
         args = dict(params=pickle.dumps(plugin_params))
 
