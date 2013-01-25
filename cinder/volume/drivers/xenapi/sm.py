@@ -16,8 +16,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import uuid
-
 from cinder import flags
 from cinder.image import glance
 from cinder.openstack.common import cfg
@@ -155,8 +153,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
-        MAX_VDI_CHAIN_SIZE = 16
-        uuid_stack = [str(uuid.uuid4()) for i in xrange(MAX_VDI_CHAIN_SIZE)]
+        uuid_stack = [vdi_uuid]
 
         LOG.error("sr_uuid: %s", sr_uuid)
         LOG.error("vdi_uuid: %s", vdi_uuid)
