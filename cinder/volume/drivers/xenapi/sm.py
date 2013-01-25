@@ -193,6 +193,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             result = self.nfs_ops.call_plugin('glance', 'download_vhd', args)
             LOG.error(pickle.loads(result))
         except Exception as e:
+            LOG.error("Exception happened")
             LOG.error(e)
         finally:
             self.nfs_ops.disconnect_volume(vdi_uuid)
