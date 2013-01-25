@@ -146,6 +146,10 @@ class XenAPINFSDriver(driver.VolumeDriver):
         pass
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
+        sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+
+        LOG.error("sr_uuid: %s", sr_uuid)
+        LOG.error("vdi_uuid: %s", vdi_uuid)
         LOG.error("image_id: %s", image_id)
         gcw = glance_client_wrapper = image_service._client
 
