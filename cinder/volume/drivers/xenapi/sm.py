@@ -18,9 +18,12 @@
 
 from cinder import flags
 from cinder.openstack.common import cfg
+from cinder.openstack.common import log as logging
 from cinder.volume import driver
 from cinder.volume.drivers.xenapi import lib as xenapi_lib
 
+
+LOG = logging.getLogger(__name__)
 
 xenapi_opts = [
     cfg.StrOpt('xenapi_connection_url',
@@ -142,6 +145,18 @@ class XenAPINFSDriver(driver.VolumeDriver):
         pass
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
+        LOG.error("image_id: %s", image_id)
+        gcw = glance_client_wrapper = image_service._client
+
+        glance_host = gcw.host
+        glance_port = gcw.port
+        glance_use_ssl = gcw.use_ssl
+        auth_token = "??"
+
+        LOG.error("glance_host: %s", glance_host)
+        LOG.error("glance_port: %s", glance_port)
+        LOG.error("glance_use_ssl: %s", glance_use_ssl)
+        LOG.error("auth_token: %s", auth_token)
         raise NotImplementedError()
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
