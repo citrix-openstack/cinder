@@ -16,6 +16,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import uuid
+
 from cinder import flags
 from cinder.image import glance
 from cinder.openstack.common import cfg
