@@ -150,7 +150,7 @@ class HostOperations(OperationsBase):
         try:
             return self._session.host.call_plugin(
                 host_ref, plugin, function, args)
-        except self._exception_to_convert as e:
+        except self._session._exception_to_convert as e:
             raise XenAPIException(e)
 
 
