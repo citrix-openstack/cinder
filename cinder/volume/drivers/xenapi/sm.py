@@ -16,6 +16,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pickle
+
 from cinder import flags
 from cinder.image import glance
 from cinder.openstack.common import cfg
@@ -170,8 +172,29 @@ class XenAPINFSDriver(driver.VolumeDriver):
         LOG.error("glance_port: %s", glance_port)
         LOG.error("glance_use_ssl: %s", glance_use_ssl)
 
-        # Connect the volume
-        raise NotImplementedError()
+        plugin_params = dict(
+            image_id=image_id,
+            glance_host=glance_host,
+            glance_port=glance_port,
+            glance_use_ssl=glance_use_ssl,
+            uuid_stack=uuid_stack,
+            sr_path="/var/run/sr-mount/" + sr_uuid,
+            auth_token=contex.auth_token)
+
+        args = dict(params=pickle.dumps(plugin_params))
+
+        self.nfs_ops.connect_volume(
+            FLAGS.xenapi_nfs_server,
+            FLAGS.xenapi_nfs_serverpath,
+            sr_uuid,
+            vdi_uuid)
+
+        try:
+            self.nfs_ops.call_plugin('glance', 'download_vhd', args)
+        except Exception as e:
+            LOG.error(e)
+
+        self.nfs_ops.disconnect_volume(vdi_uuid)
 
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
         raise NotImplementedError()

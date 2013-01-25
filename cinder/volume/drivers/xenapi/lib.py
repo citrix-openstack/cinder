@@ -146,6 +146,10 @@ class HostOperations(OperationsBase):
     def get_uuid(self, host_ref):
         return self.get_record(host_ref)['uuid']
 
+    def call_plugin(self, host_ref, plugin, function, args):
+        return self.call_xenapi(
+            'host.call_plugin', host_ref, plugin, function, args)
+
 
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
@@ -355,3 +359,8 @@ class NFSBasedVolumeOperations(object):
                 session.unplug_pbds_and_forget_sr(src_refs['sr_ref'])
 
             return dst_refs
+
+    def call_plugin(self, plugin, function, args):
+        with self._session_factory.get_session() as session:
+            host_ref = session.get_this_host()
+            return session.host.call_plugin(host_ref, plugin, function, args)
