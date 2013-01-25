@@ -191,7 +191,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
         try:
             result = self.nfs_ops.call_plugin('glance', 'download_vhd', args)
-            LOG.error(pickle.loads(result))
+            LOG.error('Plugin returned with: %s', result)
         except Exception as e:
             LOG.error("Exception happened")
             LOG.error(e)
