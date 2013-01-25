@@ -146,9 +146,6 @@ class HostOperations(OperationsBase):
     def get_uuid(self, host_ref):
         return self.get_record(host_ref)['uuid']
 
-    def call_plugin(self, host_ref, plugin, function, args):
-        return self.session.call_plugin(host_ref, plugin, function, args)
-
 
 class XenAPISession(object):
     def __init__(self, session, exception_to_convert):
@@ -171,6 +168,7 @@ class XenAPISession(object):
 
     def call_plugin(self, host_ref, plugin, function, args):
         try:
+            print "CALLLING PLUGGGIN", host_ref, plugin, function, args
             return self._session.host.call_plugin(
                 host_ref, plugin, function, args)
         except self._exception_to_convert as e:
@@ -369,4 +367,4 @@ class NFSBasedVolumeOperations(object):
     def call_plugin(self, plugin, function, args):
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
-            return session.host.call_plugin(host_ref, plugin, function, args)
+            return session.call_plugin(host_ref, plugin, function, args)
