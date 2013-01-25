@@ -147,11 +147,7 @@ class HostOperations(OperationsBase):
         return self.get_record(host_ref)['uuid']
 
     def call_plugin(self, host_ref, plugin, function, args):
-        try:
-            return self.session.host.call_plugin(
-                host_ref, plugin, function, args)
-        except self.session._exception_to_convert as e:
-            raise XenAPIException(e)
+        return self.session.call_plugin(host_ref, plugin, function, args)
 
 
 class XenAPISession(object):
@@ -170,6 +166,13 @@ class XenAPISession(object):
     def call_xenapi(self, method, *args):
         try:
             return self._session.xenapi_request(method, args)
+        except self._exception_to_convert as e:
+            raise XenAPIException(e)
+
+    def call_plugin(self, host_ref, plugin, function, args):
+        try:
+            return self._session.host.call_plugin(
+                host_ref, plugin, function, args)
         except self._exception_to_convert as e:
             raise XenAPIException(e)
 
