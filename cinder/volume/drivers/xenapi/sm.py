@@ -17,6 +17,7 @@
 #    under the License.
 
 from cinder import flags
+from cinder.image import glance
 from cinder.openstack.common import cfg
 from cinder.openstack.common import log as logging
 from cinder.volume import driver
@@ -150,9 +151,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
         LOG.error("auth_token: %s", context.auth_token)
 
-        glance_host = gcw.host
-        glance_port = gcw.port
-        glance_use_ssl = gcw.use_ssl
+        api_servers = glance.get_api_servers()
+        glance_host, glance_port, glance_use_ssl = api_servers.next()
 
         LOG.error("glance_host: %s", glance_host)
         LOG.error("glance_port: %s", glance_port)
