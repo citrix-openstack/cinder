@@ -202,5 +202,12 @@ class XenAPINFSDriver(driver.VolumeDriver):
         finally:
             self.nfs_ops.disconnect_volume(vdi_uuid)
 
-    def copy_volume_to_image(self, context, volume, image_service, image_meta):
+        self.nfs_ops.resize_volume(
+            FLAGS.xenapi_nfs_server,
+            FLAGS.xenapi_nfs_serverpath,
+            sr_uuid,
+            vdi_uuid,
+            volume['size'])
+
+    def copy_volume_to_image(self, context, volume, image_service, image_id):
         raise NotImplementedError()

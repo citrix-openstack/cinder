@@ -138,6 +138,9 @@ class VdiOperations(OperationsBase):
     def copy(self, vdi_ref, sr_ref):
         return self.call_xenapi('VDI.copy', vdi_ref, sr_ref)
 
+    def resize(self, vdi_ref, size):
+        return self.call_xenapi('VDI.resize', vdi_ref, size)
+
 
 class HostOperations(OperationsBase):
     def get_record(self, host_ref):
@@ -368,3 +371,14 @@ class NFSBasedVolumeOperations(object):
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
             return session.call_plugin(host_ref, plugin, function, args)
+
+    def resize_volume(self, server, serverpath, sr_uuid, vdi_uuid,
+                      size_in_gigabytes):
+        self.connect_volume(server, serverpath, sr_uuid, vdi_uuid)
+
+        try:
+            with self._session_factory.get_session() as session:
+                vdi_ref = session.VDI.get_by_uuid(vdi_uuid)
+                session.VDI.resize(vdi_ref, to_bytes(size_in_gigabytes))
+        finally:
+            self.disconnect_volume(vdi_uuid)
