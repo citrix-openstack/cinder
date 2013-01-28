@@ -139,7 +139,7 @@ class VdiOperations(OperationsBase):
         return self.call_xenapi('VDI.copy', vdi_ref, sr_ref)
 
     def resize(self, vdi_ref, size):
-        return self.call_xenapi('VDI.resize', vdi_ref, size)
+        return self.call_xenapi('VDI.resize', vdi_ref, str(size))
 
 
 class HostOperations(OperationsBase):
