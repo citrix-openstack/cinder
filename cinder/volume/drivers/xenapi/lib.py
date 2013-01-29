@@ -171,7 +171,6 @@ class XenAPISession(object):
 
     def call_plugin(self, host_ref, plugin, function, args):
         try:
-            print "CALLLING PLUGGGIN", host_ref, plugin, function, args
             return self._session.xenapi.host.call_plugin(
                 host_ref, plugin, function, args)
         except self._exception_to_convert as e:
