@@ -147,31 +147,13 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def ensure_export(self, context, volume):
         pass
 
-    def clone_image(self, volume, image_location):
-        LOG.error("clone_image")
-        LOG.error("image_location: %s", image_location)
-        return False
-
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
         uuid_stack = [vdi_uuid]
 
-        LOG.error("sr_uuid: %s", sr_uuid)
-        LOG.error("vdi_uuid: %s", vdi_uuid)
-        LOG.error("image_id: %s", image_id)
-        gcw = glance_client_wrapper = image_service._client
-
-        LOG.error("auth_token: %s", context.auth_token)
-        LOG.error("uuid_stack: %s", uuid_stack)
-
         api_servers = glance.get_api_servers()
         glance_host, glance_port, glance_use_ssl = api_servers.next()
-
-        LOG.error("glance_host: %s", glance_host)
-        LOG.error("glance_port: %s", glance_port)
-        LOG.error("glance_use_ssl: %s", glance_use_ssl)
-
         auth_token = context.auth_token
 
         plugin_kwargs = dict(
@@ -194,6 +176,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             vdi_uuid)
 
         try:
+            # TODO: pickle.loads this stuff please
             result = self.nfs_ops.call_plugin('glance', 'download_vhd', args)
             LOG.error('Plugin returned with: %s', result)
         except Exception as e:

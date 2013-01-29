@@ -430,8 +430,6 @@ def get_remote_image_service(context, image_href):
     """
     #NOTE(bcwaldon): If image_href doesn't look like a URI, assume its a
     # standalone image ID
-
-    LOG.debug('get_remote_image_service for: %s', image_href)
     if '/' not in str(image_href):
         image_service = get_default_image_service()
         return image_service, image_href
