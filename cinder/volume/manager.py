@@ -192,6 +192,7 @@ class VolumeManager(manager.SchedulerDependentManager):
 
             if model_update:
                 self.db.volume_update(context, volume_ref['id'], model_update)
+                volume_ref.update(model_update)
 
             LOG.debug(_("volume %s: creating export"), volume_ref['name'])
             model_update = self.driver.create_export(context, volume_ref)
