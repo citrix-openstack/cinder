@@ -163,18 +163,21 @@ class XenAPISession(object):
     def close(self):
         return self.call_xenapi('logout')
 
-    def call_xenapi(self, method, *args):
+    @contextlib.contextmanager
+    def exception_converter(self):
         try:
-            return self._session.xenapi_request(method, args)
+            yield None
         except self._exception_to_convert as e:
             raise XenAPIException(e)
 
+    def call_xenapi(self, method, *args):
+        with self.exception_converter():
+            return self._session.xenapi_request(method, args)
+
     def call_plugin(self, host_ref, plugin, function, args):
-        try:
+        with self.exception_converter():
             return self._session.xenapi.host.call_plugin(
                 host_ref, plugin, function, args)
-        except self._exception_to_convert as e:
-            raise XenAPIException(e)
 
     def get_pool(self):
         return self.call_xenapi('session.get_pool', self.handle)
