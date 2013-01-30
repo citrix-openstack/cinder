@@ -176,12 +176,13 @@ class XenAPINFSDriver(driver.VolumeDriver):
             vdi_uuid)
 
         try:
-            # TODO: pickle.loads this stuff please
-            result = self.nfs_ops.call_plugin('glance', 'download_vhd', args)
-            LOG.error('Plugin returned with: %s', result)
-        except Exception as e:
-            LOG.error("Exception happened")
-            LOG.error(e)
+            # TODO(matelakat): pickle.loads result
+            self.nfs_ops.call_plugin('glance', 'download_vhd', args)
+        except xenapi_lib.XenAPIException as e:
+            LOG.error("Failed to call glance xenapi plugin. Make sure, " +
+                      "that the glance XenAPI plugin is installed on host " +
+                      FLAGS.xenapi_connection_url)
+            raise
         finally:
             self.nfs_ops.disconnect_volume(vdi_uuid)
 
