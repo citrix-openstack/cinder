@@ -163,17 +163,18 @@ class XenAPINFSDriver(driver.VolumeDriver):
             vdi_uuid)
 
         try:
-            # TODO(matelakat): pickle.loads result
-            self.nova_plugins.glance.download_vhd(
+            result = self.nova_plugins.glance.download_vhd(
                 image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
                 sr_uuid, auth_token)
         except xenapi_lib.XenAPIException as e:
-            LOG.error("Failed to call glance xenapi plugin. Make sure, " +
+            LOG.error("Plugin call failed. Make sure, " +
                       "that the glance XenAPI plugin is installed on host " +
                       FLAGS.xenapi_connection_url)
             raise
         finally:
             self.nfs_ops.disconnect_volume(vdi_uuid)
+
+        LOG.error("plugin returned: %s", result)
 
         self.nfs_ops.resize_volume(
             FLAGS.xenapi_nfs_server,
