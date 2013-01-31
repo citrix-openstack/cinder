@@ -305,7 +305,7 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
-class NovaPlugins(object):
+class PluginBase(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
 
@@ -313,6 +313,16 @@ class NovaPlugins(object):
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
             return session.call_plugin(host_ref, plugin, function, args)
+
+
+class GlancePlugin(PluginBase):
+    def download_vhd(self, args):
+        return self.call_plugin('glance', 'download_vhd', args)
+
+
+class NovaPlugins(object):
+    def __init__(self, session_factory):
+        self.glance = GlancePlugin(session_factory)
 
 
 class NFSBasedVolumeOperations(object):

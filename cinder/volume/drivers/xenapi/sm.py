@@ -178,7 +178,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
         try:
             # TODO(matelakat): pickle.loads result
-            self.nova_plugins.call_plugin('glance', 'download_vhd', args)
+            self.nova_plugins.glance.download_vhd(args)
         except xenapi_lib.XenAPIException as e:
             LOG.error("Failed to call glance xenapi plugin. Make sure, " +
                       "that the glance XenAPI plugin is installed on host " +
