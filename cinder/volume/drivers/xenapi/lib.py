@@ -305,6 +305,16 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
+class NovaPlugins(object):
+    def __init__(self, session_factory):
+        self._session_factory = session_factory
+
+    def call_plugin(self, plugin, function, args):
+        with self._session_factory.get_session() as session:
+            host_ref = session.get_this_host()
+            return session.call_plugin(host_ref, plugin, function, args)
+
+
 class NFSBasedVolumeOperations(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
@@ -368,11 +378,6 @@ class NFSBasedVolumeOperations(object):
                 session.unplug_pbds_and_forget_sr(src_refs['sr_ref'])
 
             return dst_refs
-
-    def call_plugin(self, plugin, function, args):
-        with self._session_factory.get_session() as session:
-            host_ref = session.get_this_host()
-            return session.call_plugin(host_ref, plugin, function, args)
 
     def resize_volume(self, server, serverpath, sr_uuid, vdi_uuid,
                       size_in_gigabytes):
