@@ -317,8 +317,10 @@ class XapiPlugin(object):
 
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
-            return session.call_plugin(
+            result = session.call_plugin(
                 host_ref, self._plugin_name, function, args)
+
+        return pikle.loads(result)
 
 
 class GlancePlugin(XapiPlugin):
