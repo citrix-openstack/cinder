@@ -306,7 +306,7 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
-class XapiPlugin(object):
+class XapiPluginProxy(object):
     def __init__(self, session_factory, plugin_name):
         self._session_factory = session_factory
         self._plugin_name = plugin_name
@@ -323,9 +323,9 @@ class XapiPlugin(object):
         return pikle.loads(result)
 
 
-class GlancePlugin(XapiPlugin):
+class GlancePluginProxy(XapiPluginProxy):
     def __init__(self, session_factory):
-        super(GlancePlugin, self).__init__(session_factory, 'glance')
+        super(GlancePluginProxy, self).__init__(session_factory, 'glance')
 
     def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl,
                      uuid_stack, sr_uuid, auth_token):
@@ -342,7 +342,7 @@ class GlancePlugin(XapiPlugin):
 
 class NovaPlugins(object):
     def __init__(self, session_factory):
-        self.glance = GlancePlugin(session_factory)
+        self.glance = GlancePluginProxy(session_factory)
 
 
 class NFSBasedVolumeOperations(object):
