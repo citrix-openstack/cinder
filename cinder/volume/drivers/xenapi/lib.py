@@ -320,7 +320,7 @@ class XapiPluginProxy(object):
             result = session.call_plugin(
                 host_ref, self._plugin_name, function, args)
 
-        return pikle.loads(result)
+        return pickle.loads(result)
 
 
 class GlancePluginProxy(XapiPluginProxy):
