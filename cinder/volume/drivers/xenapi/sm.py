@@ -17,6 +17,7 @@
 #    under the License.
 
 
+from cinder import exception
 from cinder import flags
 from cinder.image import glance
 from cinder.openstack.common import cfg
@@ -163,7 +164,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
             auth_token)
 
         if overwrite_result is False:
-            raise Exception("AAAAA")
+            raise exception.ImageCopyFailure()
 
         self.nfs_ops.resize_volume(
             FLAGS.xenapi_nfs_server,

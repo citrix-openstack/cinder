@@ -17,10 +17,16 @@
 #    under the License.
 
 from cinder.db import api as db_api
+from cinder import exception
 from cinder.volume.drivers.xenapi import lib
 from cinder.volume.drivers.xenapi import sm as driver
 import mox
 import unittest
+
+
+class MockContext(object):
+    def __init__(ctxt, auth_token):
+        ctxt.auth_token = auth_token
 
 
 class DriverTestCase(unittest.TestCase):
@@ -184,7 +190,7 @@ class DriverTestCase(unittest.TestCase):
             result
         )
 
-    def _setup_for_snapshots(self, server, serverpath):
+    def _setup_mock_driver(self, server, serverpath):
         mock = mox.Mox()
 
         drv = driver.XenAPINFSDriver()
@@ -200,7 +206,7 @@ class DriverTestCase(unittest.TestCase):
         return mock, drv
 
     def test_create_snapshot(self):
-        mock, drv = self._setup_for_snapshots('server', 'serverpath')
+        mock, drv = self._setup_mock_driver('server', 'serverpath')
 
         snapshot = dict(
             volume_id="volume-id",
@@ -221,7 +227,7 @@ class DriverTestCase(unittest.TestCase):
             result)
 
     def test_create_volume_from_snapshot(self):
-        mock, drv = self._setup_for_snapshots('server', 'serverpath')
+        mock, drv = self._setup_mock_driver('server', 'serverpath')
 
         snapshot = dict(
             provider_location='src-sr-uuid/src-vdi-uuid')
@@ -241,7 +247,7 @@ class DriverTestCase(unittest.TestCase):
             dict(provider_location='copied-sr/copied-vdi'), result)
 
     def test_delete_snapshot(self):
-        mock, drv = self._setup_for_snapshots('server', 'serverpath')
+        mock, drv = self._setup_mock_driver('server', 'serverpath')
 
         snapshot = dict(
             provider_location='src-sr-uuid/src-vdi-uuid')
@@ -251,4 +257,51 @@ class DriverTestCase(unittest.TestCase):
 
         mock.ReplayAll()
         drv.delete_snapshot(snapshot)
+        mock.VerifyAll()
+
+    def test_copy_image_to_volume_success(self):
+        mock, drv = self._setup_mock_driver('server', 'serverpath')
+
+        volume = dict(
+            provider_location='sr-uuid/vdi-uuid',
+            size=2)
+
+        mock.StubOutWithMock(driver.glance, 'get_api_servers')
+
+        driver.glance.get_api_servers().AndReturn((x for x in ['glancesrv']))
+
+        drv.nfs_ops.use_glance_plugin_to_overwrite_volume(
+            'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 'glancesrv',
+            'image_id', 'token').AndReturn(True)
+
+        drv.nfs_ops.resize_volume(
+            'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 2)
+
+        mock.ReplayAll()
+        drv.copy_image_to_volume(
+            MockContext('token'), volume, "ignore", "image_id")
+        mock.VerifyAll()
+
+    def test_copy_image_to_volume_fail(self):
+        mock, drv = self._setup_mock_driver('server', 'serverpath')
+
+        volume = dict(
+            provider_location='sr-uuid/vdi-uuid',
+            size=2)
+
+        mock.StubOutWithMock(driver.glance, 'get_api_servers')
+
+        driver.glance.get_api_servers().AndReturn((x for x in ['glancesrv']))
+
+        drv.nfs_ops.use_glance_plugin_to_overwrite_volume(
+            'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 'glancesrv',
+            'image_id', 'token').AndReturn(False)
+
+        mock.ReplayAll()
+
+        self.assertRaises(
+            exception.ImageCopyFailure,
+            lambda: drv.copy_image_to_volume(
+                MockContext('token'), volume, "ignore", "image_id"))
+
         mock.VerifyAll()
