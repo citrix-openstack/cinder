@@ -40,6 +40,7 @@ class DriverTestCase(unittest.TestCase):
         self.assert_flag('xenapi_connection_password')
         self.assert_flag('xenapi_nfs_server')
         self.assert_flag('xenapi_nfs_serverpath')
+        self.assert_flag('xenapi_sr_base_path')
 
     def test_do_setup(self):
         mock = mox.Mox()
