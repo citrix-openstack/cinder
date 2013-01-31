@@ -306,7 +306,7 @@ class SessionFactory(object):
         return connect(self.url, self.user, self.password)
 
 
-class PluginBase(object):
+class XapiPlugin(object):
     def __init__(self, session_factory, plugin_name):
         self._session_factory = session_factory
         self._plugin_name = plugin_name
@@ -318,7 +318,7 @@ class PluginBase(object):
                 host_ref, self._plugin_name, function, args)
 
 
-class GlancePlugin(PluginBase):
+class GlancePlugin(XapiPlugin):
     def __init__(self, session_factory):
         super(GlancePlugin, self).__init__(session_factory, 'glance')
 
