@@ -153,7 +153,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
         glance_server = api_servers.next()
         auth_token = context.auth_token
 
-        self.nfs_ops.use_glance_plugin_to_overwrite_volume(
+        overwrite_result = self.nfs_ops.use_glance_plugin_to_overwrite_volume(
             FLAGS.xenapi_nfs_server,
             FLAGS.xenapi_nfs_serverpath,
             sr_uuid,
@@ -161,6 +161,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
             glance_server,
             image_id,
             auth_token)
+
+        if overwrite_result is False:
+            raise Exception("AAAAA")
 
         self.nfs_ops.resize_volume(
             FLAGS.xenapi_nfs_server,

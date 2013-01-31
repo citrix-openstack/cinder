@@ -431,4 +431,7 @@ class NFSBasedVolumeOperations(object):
         finally:
             self.disconnect_volume(vdi_uuid)
 
-        print "RESULT", result
+        if len(result) != 1 or result['root']['uuid'] != vdi_uuid:
+            return False
+
+        return True
