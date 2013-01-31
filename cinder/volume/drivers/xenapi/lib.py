@@ -307,16 +307,21 @@ class SessionFactory(object):
 
 
 class PluginBase(object):
-    def __init__(self, session_factory):
+    def __init__(self, session_factory, plugin_name):
         self._session_factory = session_factory
+        self._plugin_name = plugin_name
 
-    def call_plugin(self, plugin, function, args):
+    def call(self, function, args):
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
-            return session.call_plugin(host_ref, plugin, function, args)
+            return session.call_plugin(
+                host_ref, self._plugin_name, function, args)
 
 
 class GlancePlugin(PluginBase):
+    def __init__(self, session_factory):
+        super(GlancePlugin, self).__init__(session_factory, 'glance')
+
     def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl, uuid_stack, sr_uuid, auth_token):
         plugin_kwargs = dict(
             image_id=image_id,
@@ -331,7 +336,7 @@ class GlancePlugin(PluginBase):
 
         args = dict(params=pickle.dumps(plugin_params))
 
-        return self.call_plugin('glance', 'download_vhd', args)
+        return self.call('download_vhd', args)
 
 
 class NovaPlugins(object):
