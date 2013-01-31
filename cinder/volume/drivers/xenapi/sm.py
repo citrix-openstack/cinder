@@ -16,7 +16,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import pickle
 
 from cinder import flags
 from cinder.image import glance
@@ -157,19 +156,6 @@ class XenAPINFSDriver(driver.VolumeDriver):
         glance_host, glance_port, glance_use_ssl = api_servers.next()
         auth_token = context.auth_token
 
-        plugin_kwargs = dict(
-            image_id=image_id,
-            glance_host=glance_host,
-            glance_port=glance_port,
-            glance_use_ssl=glance_use_ssl,
-            uuid_stack=uuid_stack,
-            sr_path="/var/run/sr-mount/" + sr_uuid,
-            auth_token=auth_token)
-
-        plugin_params = dict(args=[], kwargs=plugin_kwargs)
-
-        args = dict(params=pickle.dumps(plugin_params))
-
         self.nfs_ops.connect_volume(
             FLAGS.xenapi_nfs_server,
             FLAGS.xenapi_nfs_serverpath,
@@ -178,7 +164,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
         try:
             # TODO(matelakat): pickle.loads result
-            self.nova_plugins.glance.download_vhd(args)
+            self.nova_plugins.glance.download_vhd(
+                image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
+                sr_uuid, auth_token)
         except xenapi_lib.XenAPIException as e:
             LOG.error("Failed to call glance xenapi plugin. Make sure, " +
                       "that the glance XenAPI plugin is installed on host " +

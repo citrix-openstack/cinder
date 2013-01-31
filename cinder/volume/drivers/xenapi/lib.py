@@ -17,6 +17,7 @@
 #    under the License.
 
 import contextlib
+import pickle
 
 
 class XenAPIException(Exception):
@@ -316,7 +317,20 @@ class PluginBase(object):
 
 
 class GlancePlugin(PluginBase):
-    def download_vhd(self, args):
+    def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl, uuid_stack, sr_uuid, auth_token):
+        plugin_kwargs = dict(
+            image_id=image_id,
+            glance_host=glance_host,
+            glance_port=glance_port,
+            glance_use_ssl=glance_use_ssl,
+            uuid_stack=uuid_stack,
+            sr_path="/var/run/sr-mount/" + sr_uuid,
+            auth_token=auth_token)
+
+        plugin_params = dict(args=[], kwargs=plugin_kwargs)
+
+        args = dict(params=pickle.dumps(plugin_params))
+
         return self.call_plugin('glance', 'download_vhd', args)
 
 
