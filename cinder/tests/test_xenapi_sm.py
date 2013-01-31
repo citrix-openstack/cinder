@@ -190,7 +190,7 @@ class DriverTestCase(unittest.TestCase):
             result
         )
 
-    def _setup_mock_driver(self, server, serverpath):
+    def _setup_mock_driver(self, server, serverpath, sr_base_path="_srbp"):
         mock = mox.Mox()
 
         drv = driver.XenAPINFSDriver()
@@ -202,6 +202,7 @@ class DriverTestCase(unittest.TestCase):
         mock.StubOutWithMock(driver, 'FLAGS')
         driver.FLAGS.xenapi_nfs_server = server
         driver.FLAGS.xenapi_nfs_serverpath = serverpath
+        driver.FLAGS.xenapi_sr_base_path = sr_base_path
 
         return mock, drv
 
@@ -260,7 +261,8 @@ class DriverTestCase(unittest.TestCase):
         mock.VerifyAll()
 
     def test_copy_image_to_volume_success(self):
-        mock, drv = self._setup_mock_driver('server', 'serverpath')
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
 
         volume = dict(
             provider_location='sr-uuid/vdi-uuid',
@@ -272,7 +274,7 @@ class DriverTestCase(unittest.TestCase):
 
         drv.nfs_ops.use_glance_plugin_to_overwrite_volume(
             'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 'glancesrv',
-            'image_id', 'token').AndReturn(True)
+            'image_id', 'token', '/var/run/sr-mount').AndReturn(True)
 
         drv.nfs_ops.resize_volume(
             'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 2)
@@ -283,7 +285,8 @@ class DriverTestCase(unittest.TestCase):
         mock.VerifyAll()
 
     def test_copy_image_to_volume_fail(self):
-        mock, drv = self._setup_mock_driver('server', 'serverpath')
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
 
         volume = dict(
             provider_location='sr-uuid/vdi-uuid',
@@ -295,7 +298,7 @@ class DriverTestCase(unittest.TestCase):
 
         drv.nfs_ops.use_glance_plugin_to_overwrite_volume(
             'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 'glancesrv',
-            'image_id', 'token').AndReturn(False)
+            'image_id', 'token', '/var/run/sr-mount').AndReturn(False)
 
         mock.ReplayAll()
 

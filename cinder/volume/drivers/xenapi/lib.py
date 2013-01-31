@@ -17,6 +17,7 @@
 #    under the License.
 
 import contextlib
+import os
 import pickle
 
 
@@ -328,7 +329,7 @@ class GlancePluginProxy(XapiPluginProxy):
         super(GlancePluginProxy, self).__init__(session_factory, 'glance')
 
     def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl,
-                     uuid_stack, sr_uuid, auth_token):
+                     uuid_stack, sr_path, auth_token):
         return self.call(
             'download_vhd',
             image_id=image_id,
@@ -336,7 +337,7 @@ class GlancePluginProxy(XapiPluginProxy):
             glance_port=glance_port,
             glance_use_ssl=glance_use_ssl,
             uuid_stack=uuid_stack,
-            sr_path="/var/run/sr-mount/" + sr_uuid,
+            sr_path=sr_path,
             auth_token=auth_token)
 
 
@@ -418,7 +419,8 @@ class NFSBasedVolumeOperations(object):
 
     def use_glance_plugin_to_overwrite_volume(self, server, serverpath,
                                               sr_uuid, vdi_uuid, glance_server,
-                                              image_id, auth_token):
+                                              image_id, auth_token,
+                                              sr_base_path):
         self.connect_volume(server, serverpath, sr_uuid, vdi_uuid)
 
         uuid_stack = [vdi_uuid]
@@ -427,7 +429,7 @@ class NFSBasedVolumeOperations(object):
         try:
             result = self.glance_plugin.download_vhd(
                 image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
-                sr_uuid, auth_token)
+                os.path.join(sr_base_path, sr_uuid), auth_token)
         finally:
             self.disconnect_volume(vdi_uuid)
 

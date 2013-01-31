@@ -38,6 +38,9 @@ xenapi_opts = [
     cfg.StrOpt('xenapi_connection_password',
                default=None,
                help='Password for XenAPI connection'),
+    cfg.StrOpt('xenapi_sr_base_path',
+               default='/var/run/sr-mount',
+               help='Base path to the storage repository'),
 ]
 
 xenapi_nfs_opts = [
@@ -161,7 +164,8 @@ class XenAPINFSDriver(driver.VolumeDriver):
             vdi_uuid,
             glance_server,
             image_id,
-            auth_token)
+            auth_token,
+            FLAGS.xenapi_sr_base_path)
 
         if overwrite_result is False:
             raise exception.ImageCopyFailure()
