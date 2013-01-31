@@ -343,7 +343,7 @@ class GlancePluginProxy(XapiPluginProxy):
 class NFSBasedVolumeOperations(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
-        self.glance = GlancePluginProxy(session_factory)
+        self.glance_plugin = GlancePluginProxy(session_factory)
 
     def create_volume(self, server, serverpath, size,
                       name=None, description=None):
@@ -425,7 +425,7 @@ class NFSBasedVolumeOperations(object):
         glance_host, glance_port, glance_use_ssl = glance_server
 
         try:
-            self.nova_plugins.glance.download_vhd(
+            self.glance_plugin.download_vhd(
                 image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
                 sr_uuid, auth_token)
         finally:
