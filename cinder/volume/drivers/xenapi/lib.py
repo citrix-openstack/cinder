@@ -425,8 +425,10 @@ class NFSBasedVolumeOperations(object):
         glance_host, glance_port, glance_use_ssl = glance_server
 
         try:
-            self.glance_plugin.download_vhd(
+            result = self.glance_plugin.download_vhd(
                 image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
                 sr_uuid, auth_token)
         finally:
             self.disconnect_volume(vdi_uuid)
+
+        print "RESULT", result
