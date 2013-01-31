@@ -62,7 +62,6 @@ class XenAPINFSDriver(driver.VolumeDriver):
             FLAGS.xenapi_connection_password
         )
         self.nfs_ops = xenapi_lib.NFSBasedVolumeOperations(session_factory)
-        self.nova_plugins = xenapi_lib.NovaPlugins(session_factory)
 
     def create_cloned_volume(self, volume, src_vref):
         raise NotImplementedError()
@@ -150,31 +149,18 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def copy_image_to_volume(self, context, volume, image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
-        uuid_stack = [vdi_uuid]
-
         api_servers = glance.get_api_servers()
-        glance_host, glance_port, glance_use_ssl = api_servers.next()
+        glance_server = api_servers.next()
         auth_token = context.auth_token
 
-        self.nfs_ops.connect_volume(
+        self.nfs_ops.use_glance_plugin_to_overwrite_volume(
             FLAGS.xenapi_nfs_server,
             FLAGS.xenapi_nfs_serverpath,
             sr_uuid,
-            vdi_uuid)
-
-        try:
-            result = self.nova_plugins.glance.download_vhd(
-                image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
-                sr_uuid, auth_token)
-        except xenapi_lib.XenAPIException as e:
-            LOG.error("Plugin call failed. Make sure, " +
-                      "that the glance XenAPI plugin is installed on host " +
-                      FLAGS.xenapi_connection_url)
-            raise
-        finally:
-            self.nfs_ops.disconnect_volume(vdi_uuid)
-
-        LOG.error("plugin returned: %s", result)
+            vdi_uuid,
+            glance_server,
+            image_id,
+            auth_token)
 
         self.nfs_ops.resize_volume(
             FLAGS.xenapi_nfs_server,

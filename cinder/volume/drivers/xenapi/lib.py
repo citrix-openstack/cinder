@@ -340,14 +340,10 @@ class GlancePluginProxy(XapiPluginProxy):
             auth_token=auth_token)
 
 
-class NovaPlugins(object):
-    def __init__(self, session_factory):
-        self.glance = GlancePluginProxy(session_factory)
-
-
 class NFSBasedVolumeOperations(object):
     def __init__(self, session_factory):
         self._session_factory = session_factory
+        self.glance = GlancePluginProxy(session_factory)
 
     def create_volume(self, server, serverpath, size,
                       name=None, description=None):
@@ -417,5 +413,20 @@ class NFSBasedVolumeOperations(object):
             with self._session_factory.get_session() as session:
                 vdi_ref = session.VDI.get_by_uuid(vdi_uuid)
                 session.VDI.resize(vdi_ref, to_bytes(size_in_gigabytes))
+        finally:
+            self.disconnect_volume(vdi_uuid)
+
+    def use_glance_plugin_to_overwrite_volume(self, server, serverpath,
+                                              sr_uuid, vdi_uuid, glance_server,
+                                              image_id, auth_token):
+        self.connect_volume(server, serverpath, sr_uuid, vdi_uuid)
+
+        uuid_stack = [vdi_uuid]
+        glance_host, glance_port, glance_use_ssl = glance_server
+
+        try:
+            self.nova_plugins.glance.download_vhd(
+                image_id, glance_host, glance_port, glance_use_ssl, uuid_stack,
+                sr_uuid, auth_token)
         finally:
             self.disconnect_volume(vdi_uuid)
