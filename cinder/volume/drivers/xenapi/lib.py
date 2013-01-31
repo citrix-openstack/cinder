@@ -311,7 +311,10 @@ class XapiPlugin(object):
         self._session_factory = session_factory
         self._plugin_name = plugin_name
 
-    def call(self, function, args):
+    def call(self, function, *plugin_args, **plugin_kwargs):
+        plugin_params = dict(args=plugin_args, kwargs=plugin_kwargs)
+        args = dict(params=pickle.dumps(plugin_params))
+
         with self._session_factory.get_session() as session:
             host_ref = session.get_this_host()
             return session.call_plugin(
@@ -323,7 +326,8 @@ class GlancePlugin(XapiPlugin):
         super(GlancePlugin, self).__init__(session_factory, 'glance')
 
     def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl, uuid_stack, sr_uuid, auth_token):
-        plugin_kwargs = dict(
+        return self.call(
+            'download_vhd',
             image_id=image_id,
             glance_host=glance_host,
             glance_port=glance_port,
@@ -331,12 +335,6 @@ class GlancePlugin(XapiPlugin):
             uuid_stack=uuid_stack,
             sr_path="/var/run/sr-mount/" + sr_uuid,
             auth_token=auth_token)
-
-        plugin_params = dict(args=[], kwargs=plugin_kwargs)
-
-        args = dict(params=pickle.dumps(plugin_params))
-
-        return self.call('download_vhd', args)
 
 
 class NovaPlugins(object):
