@@ -327,7 +327,8 @@ class GlancePlugin(XapiPlugin):
     def __init__(self, session_factory):
         super(GlancePlugin, self).__init__(session_factory, 'glance')
 
-    def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl, uuid_stack, sr_uuid, auth_token):
+    def download_vhd(self, image_id, glance_host, glance_port, glance_use_ssl,
+                     uuid_stack, sr_uuid, auth_token):
         return self.call(
             'download_vhd',
             image_id=image_id,
