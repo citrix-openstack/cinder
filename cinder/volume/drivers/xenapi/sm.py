@@ -180,6 +180,9 @@ class XenAPINFSDriver(driver.VolumeDriver):
     def copy_volume_to_image(self, context, volume, image_service, image_meta):
         # TODO(matelakat): image_meta should be used to detect the type of
         # the image
+
+        image_id = image_meta['id']
+
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
         api_servers = glance.get_api_servers()
