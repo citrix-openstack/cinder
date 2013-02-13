@@ -23,7 +23,10 @@ from cinder.volume import configuration as conf
 from cinder.volume import driver as parent_driver
 from cinder.volume.drivers.xenapi import lib
 from cinder.volume.drivers.xenapi import sm as driver
+from cinder.volume.drivers.xenapi import tools
+import mock
 import mox
+import StringIO
 import unittest
 
 
@@ -336,3 +339,24 @@ class DriverTestCase(unittest.TestCase):
         stats = drv.get_volume_stats()
 
         self.assertEquals('xensm', stats['storage_protocol'])
+
+
+class ToolsTest(unittest.TestCase):
+    @mock.patch('cinder.volume.drivers.xenapi.tools._stripped_first_line_of')
+    def test_get_this_vm_uuid(self, mock_read_first_line):
+        mock_read_first_line.return_value = 'someuuid'
+        self.assertEquals('someuuid', tools.get_this_vm_uuid())
+        mock_read_first_line.assert_called_once_with('/sys/hypervisor/uuid')
+
+    def test_stripped_first_line_of(self):
+        mock_context_manager = mock.Mock()
+        mock_context_manager.__enter__ = mock.Mock(
+            return_value=StringIO.StringIO('  blah  \n second line \n'))
+        mock_context_manager.__exit__ = mock.Mock(return_value=False)
+        mock_open = mock.Mock(return_value=mock_context_manager)
+
+        with mock.patch('__builtin__.open', mock_open):
+            self.assertEquals(
+                'blah', tools._stripped_first_line_of('/somefile'))
+
+        mock_open.assert_called_once_with('/somefile', 'rb')
