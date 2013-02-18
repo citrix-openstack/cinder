@@ -309,3 +309,24 @@ class DriverTestCase(unittest.TestCase):
                 MockContext('token'), volume, "ignore", "image_id"))
 
         mock.VerifyAll()
+
+    def test_get_volume_stats_reports_required_keys(self):
+        drv = driver.XenAPINFSDriver()
+
+        stats = drv.get_volume_stats()
+
+        required_metrics = [
+            'volume_backend_name', 'vendor_name', 'driver_version',
+            'storage_protocol', 'total_capacity_gb', 'free_capacity_gb',
+            'reserved_percentage'
+        ]
+
+        for metric in required_metrics:
+            self.assertTrue(metric in stats)
+
+    def test_get_volume_stats_reports_unknown_cap(self):
+        drv = driver.XenAPINFSDriver()
+
+        stats = drv.get_volume_stats()
+
+        self.assertEquals('unknown', stats['free_capacity_gb'])
