@@ -155,7 +155,7 @@ class VolumeManager(manager.SchedulerDependentManager):
         cloned = None
         model_update = False
 
-        if all(x is None for x in(snapshot_ref, image_location, srcvol_ref)):
+        if all(x is None for x in(snapshot_ref, image_id, srcvol_ref)):
             model_update = self.driver.create_volume(volume_ref)
         elif snapshot_ref is not None:
             model_update = self.driver.create_volume_from_snapshot(
