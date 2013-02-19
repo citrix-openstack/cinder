@@ -36,8 +36,8 @@ class OperationsBase(object):
 
 
 class PoolOperations(OperationsBase):
-    def get_default_SR(self):
-        return self.call_xenapi('pool.get_default_SR')
+    def get_default_SR(self, pool_ref):
+        return self.call_xenapi('pool.get_default_SR', pool_ref)
 
 
 class PbdOperations(OperationsBase):
