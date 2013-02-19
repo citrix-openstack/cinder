@@ -35,6 +35,11 @@ class OperationsBase(object):
         return self.session.call_xenapi(method, *args)
 
 
+class PoolOperations(OperationsBase):
+    def get_default_SR(self):
+        return self.call_xenapi('pool.get_default_SR')
+
+
 class PbdOperations(OperationsBase):
     def get_all(self):
         return self.call_xenapi('PBD.get_all')
@@ -161,6 +166,7 @@ class XenAPISession(object):
         self.SR = SrOperations(self)
         self.VDI = VdiOperations(self)
         self.host = HostOperations(self)
+        self.pool = PoolOperations(self)
 
     def close(self):
         return self.call_xenapi('logout')
