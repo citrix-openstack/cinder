@@ -35,7 +35,50 @@ class OperationsBase(object):
         return self.session.call_xenapi(method, *args)
 
 
+class VMOperations(OperationsBase):
+    def get_by_uuid(self, vm_uuid):
+        return self.call_xenapi('VM.get_by_uuid', vm_uuid)
+
+    def get_vbds(self, vm_uuid):
+        return self.call_xenapi('VM.get_VBDs', vm_uuid)
+
+
+class VBDOperations(OperationsBase):
+    def create(self, vm_ref, vdi_ref, userdevice, bootable, mode, type, empty, other_config):
+        vbd_rec = dict(
+            VM=vm_ref,
+            VDI=vdi_ref,
+            userdevice=str(userdevice),
+            bootable=bootable,
+            mode=mode,
+            type=type,
+            empty=empty,
+            other_config=other_config,
+            qos_algorithm_type='',
+            qos_algorithm_params=dict()
+        )
+        return self.call_xenapi('VBD.create', vbd_rec)
+
+    def destroy(self, vbd_ref):
+        self.call_xenapi('VBD.destroy', vbd_ref)
+
+    def get_device(self, vbd_ref):
+        return self.call_xenapi('VBD.get_device', vbd_ref)
+
+    def plug(self, vbd_ref):
+        return self.call_xenapi('VBD.plug', vbd_ref)
+
+    def unplug(self, vbd_ref):
+        return self.call_xenapi('VBD.unplug', vbd_ref)
+
+    def get_vdi(self, vbd_ref):
+        return self.call_xenapi('VBD.get_VDI', vbd_ref)
+
+
 class PoolOperations(OperationsBase):
+    def get_all(self):
+        return self.call_xenapi('pool.get_all')
+
     def get_default_SR(self, pool_ref):
         return self.call_xenapi('pool.get_default_SR', pool_ref)
 
@@ -167,6 +210,8 @@ class XenAPISession(object):
         self.VDI = VdiOperations(self)
         self.host = HostOperations(self)
         self.pool = PoolOperations(self)
+        self.VBD = VBDOperations(self)
+        self.VM = VMOperations(self)
 
     def close(self):
         return self.call_xenapi('logout')
