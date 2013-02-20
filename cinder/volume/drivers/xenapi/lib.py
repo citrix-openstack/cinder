@@ -19,6 +19,7 @@
 import contextlib
 import os
 import pickle
+from cinder.volume.drivers.xenapi import tools
 
 
 class XenAPIException(Exception):
@@ -44,7 +45,8 @@ class VMOperations(OperationsBase):
 
 
 class VBDOperations(OperationsBase):
-    def create(self, vm_ref, vdi_ref, userdevice, bootable, mode, type, empty, other_config):
+    def create(self, vm_ref, vdi_ref, userdevice, bootable, mode, type,
+               empty, other_config):
         vbd_rec = dict(
             VM=vm_ref,
             VDI=vdi_ref,
@@ -516,3 +518,25 @@ class NFSBasedVolumeOperations(object):
                 os.path.join(sr_base_path, sr_uuid), auth_token, dict())
         finally:
             self.disconnect_volume(vdi_uuid)
+
+    @contextlib.contextmanager
+    def volume_attached_here(self, server, serverpath, sr_uuid, vdi_uuid,
+                             readonly=True):
+        self.connect_volume(server, serverpath, sr_uuid, vdi_uuid)
+
+        with self._session_factory.get_session() as session:
+            vm_uuid = tools.get_this_vm_uuid()
+            vm_ref = session.VM.get_by_uuid(vm_uuid)
+            vdi_ref = session.VDI.get_by_uuid(vdi_uuid)
+            vbd_ref = session.VBD.create(
+                vm_ref, vdi_ref, userdevice='autodetect', bootable=False,
+                mode='RO' if readonly else 'RW', type='disk', empty=False,
+                other_config=dict())
+            session.VBD.plug(vbd_ref)
+            device = session.VBD.get_device(vbd_ref)
+            try:
+                yield "/dev/" + device
+            finally:
+                session.VBD.unplug(vbd_ref)
+                session.VBD.destroy(vbd_ref)
+                self.disconnect_volume(vdi_uuid)
