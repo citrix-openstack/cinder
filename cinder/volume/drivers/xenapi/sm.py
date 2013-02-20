@@ -170,7 +170,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
         with self.nfs_ops.volume_attached_here(FLAGS.xenapi_nfs_server,
                                                FLAGS.xenapi_nfs_serverpath,
-                                               sr_uuid, vdi_uuid
+                                               sr_uuid, vdi_uuid,
                                                False) as device:
             image_utils.fetch_to_raw(context,
                                      image_service,
