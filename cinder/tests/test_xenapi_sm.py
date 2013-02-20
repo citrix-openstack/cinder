@@ -272,7 +272,8 @@ class DriverTestCase(unittest.TestCase):
         mock.StubOutWithMock(driver, 'is_xenserver_image')
         context = MockContext('token')
 
-        driver.is_xenserver_image('image_service', 'image_id').AndReturn(True)
+        driver.is_xenserver_image(
+            context, 'image_service', 'image_id').AndReturn(True)
         drv._use_glance_plugin_to_copy_image_to_volume(
             context, 'volume', 'image_service', 'image_id').AndReturn('result')
         mock.ReplayAll()
@@ -289,7 +290,8 @@ class DriverTestCase(unittest.TestCase):
         mock.StubOutWithMock(driver, 'is_xenserver_image')
         context = MockContext('token')
 
-        driver.is_xenserver_image('image_service', 'image_id').AndReturn(False)
+        driver.is_xenserver_image(
+            context, 'image_service', 'image_id').AndReturn(False)
         drv._use_image_utils_to_pipe_bytes_to_volume(
             context, 'volume', 'image_service', 'image_id').AndReturn(True)
         mock.ReplayAll()

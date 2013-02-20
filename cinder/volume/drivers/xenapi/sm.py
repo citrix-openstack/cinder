@@ -156,7 +156,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
         pass
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
-        if is_xenserver_image(image_service, image_id):
+        if is_xenserver_image(context, image_service, image_id):
             return self._use_glance_plugin_to_copy_image_to_volume(
                 context, volume, image_service, image_id)
 
@@ -236,7 +236,7 @@ class XenAPINFSDriver(driver.VolumeDriver):
         return self._stats
 
 
-def is_xenserver_image(image_service, image_id):
+def is_xenserver_image(context, image_service, image_id):
     image_meta = image_service.show(context, image_id)
 
     return (
