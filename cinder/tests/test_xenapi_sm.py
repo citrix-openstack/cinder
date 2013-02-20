@@ -24,6 +24,7 @@ from cinder.volume import driver as parent_driver
 from cinder.volume.drivers.xenapi import lib
 from cinder.volume.drivers.xenapi import sm as driver
 from cinder.volume.drivers.xenapi import tools
+import contextlib
 import mock
 import mox
 import StringIO
@@ -263,7 +264,65 @@ class DriverTestCase(unittest.TestCase):
         drv.delete_snapshot(snapshot)
         mock.VerifyAll()
 
-    def test_copy_image_to_volume_success(self):
+    def test_copy_image_to_volume_xenserver_case(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        mock.StubOutWithMock(drv, '_use_glance_plugin_to_copy_image_to_volume')
+        mock.StubOutWithMock(driver, 'is_xenserver_image')
+        context = MockContext('token')
+
+        driver.is_xenserver_image('image_service', 'image_id').AndReturn(True)
+        drv._use_glance_plugin_to_copy_image_to_volume(
+            context, 'volume', 'image_service', 'image_id').AndReturn('result')
+        mock.ReplayAll()
+        result = drv.copy_image_to_volume(
+            context, "volume", "image_service", "image_id")
+        self.assertEquals('result', result)
+        mock.VerifyAll()
+
+    def test_copy_image_to_volume_non_xenserver_case(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        mock.StubOutWithMock(drv, '_use_image_utils_to_pipe_bytes_to_volume')
+        mock.StubOutWithMock(driver, 'is_xenserver_image')
+        context = MockContext('token')
+
+        driver.is_xenserver_image('image_service', 'image_id').AndReturn(False)
+        drv._use_image_utils_to_pipe_bytes_to_volume(
+            context, 'volume', 'image_service', 'image_id').AndReturn(True)
+        mock.ReplayAll()
+        drv.copy_image_to_volume(
+            context, "volume", "image_service", "image_id")
+        mock.VerifyAll()
+
+    def test_use_image_utils_to_pipe_bytes_to_volume(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        volume = dict(provider_location='sr-uuid/vdi-uuid')
+        context = MockContext('token')
+
+        mock.StubOutWithMock(driver.image_utils, 'fetch_to_raw')
+
+        @contextlib.contextmanager
+        def simple_context(value):
+            yield value
+
+        drv.nfs_ops.volume_attached_here(
+            'server', 'serverpath', 'sr-uuid', 'vdi-uuid', False).AndReturn(
+                simple_context('device'))
+
+        driver.image_utils.fetch_to_raw(
+            context, 'image_service', 'image_id', 'device')
+
+        mock.ReplayAll()
+        drv._use_image_utils_to_pipe_bytes_to_volume(
+            context, volume, "image_service", "image_id")
+        mock.VerifyAll()
+
+    def test_use_glance_plugin_to_copy_image_to_volume_success(self):
         mock, drv = self._setup_mock_driver(
             'server', 'serverpath', '/var/run/sr-mount')
 
@@ -283,11 +342,11 @@ class DriverTestCase(unittest.TestCase):
             'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 2)
 
         mock.ReplayAll()
-        drv.copy_image_to_volume(
+        drv._use_glance_plugin_to_copy_image_to_volume(
             MockContext('token'), volume, "ignore", "image_id")
         mock.VerifyAll()
 
-    def test_copy_image_to_volume_fail(self):
+    def test_use_glance_plugin_to_copy_image_to_volume_fail(self):
         mock, drv = self._setup_mock_driver(
             'server', 'serverpath', '/var/run/sr-mount')
 
@@ -307,7 +366,7 @@ class DriverTestCase(unittest.TestCase):
 
         self.assertRaises(
             exception.ImageCopyFailure,
-            lambda: drv.copy_image_to_volume(
+            lambda: drv._use_glance_plugin_to_copy_image_to_volume(
                 MockContext('token'), volume, "ignore", "image_id"))
 
         mock.VerifyAll()

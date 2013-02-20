@@ -16,10 +16,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from cinder.volume.drivers.xenapi import tools
 import contextlib
 import os
 import pickle
-from cinder.volume.drivers.xenapi import tools
 
 
 class XenAPIException(Exception):
