@@ -155,6 +155,21 @@ class XenAPINFSDriver(driver.VolumeDriver):
         pass
 
     def copy_image_to_volume(self, context, volume, image_service, image_id):
+        image_meta = image_service.show(context, image_id)
+
+        this_is_a_xenserver_image = (
+            image_meta['disk_format'] == 'vhd'
+            and image_meta['container_format'] == 'ovf'
+        )
+
+        if this_is_a_xenserver_image:
+            return self._use_glance_plugin_to_copy_image_to_volume(
+                context, volume, image_service, image_id)
+
+        raise NotImplementedError()
+
+    def _use_glance_plugin_to_copy_image_to_volume(self, context, volume,
+                                                   image_service, image_id):
         sr_uuid, vdi_uuid = volume['provider_location'].split('/')
 
         api_servers = glance.get_api_servers()
