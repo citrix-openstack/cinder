@@ -213,7 +213,15 @@ class XenAPINFSDriver(driver.VolumeDriver):
 
     def _use_image_utils_to_upload_volume(self, context, volume, image_service,
                                           image_meta):
-        raise NotImplementedError()
+        sr_uuid, vdi_uuid = volume['provider_location'].split('/')
+        with self.nfs_ops.volume_attached_here(FLAGS.xenapi_nfs_server,
+                                               FLAGS.xenapi_nfs_serverpath,
+                                               sr_uuid, vdi_uuid,
+                                               True) as device:
+            image_utils.upload_volume(context,
+                                      image_service,
+                                      image_meta,
+                                      device)
 
     def _use_glance_plugin_to_upload_volume(self, context, volume,
                                             image_service, image_meta):
