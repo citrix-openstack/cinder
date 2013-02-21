@@ -262,7 +262,7 @@ def is_xenserver_image(context, image_service, image_id):
     return is_xenserver_format(image_meta)
 
 
-def is_xenserver_format(image_meta)
+def is_xenserver_format(image_meta):
     return (
         image_meta['disk_format'] == 'vhd'
         and image_meta['container_format'] == 'ovf'

@@ -264,6 +264,48 @@ class DriverTestCase(unittest.TestCase):
         drv.delete_snapshot(snapshot)
         mock.VerifyAll()
 
+    def test_copy_volume_to_image_xenserver_case(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        mock.StubOutWithMock(drv, '_use_glance_plugin_to_upload_volume')
+        mock.StubOutWithMock(driver, 'is_xenserver_format')
+        context = MockContext('token')
+
+        driver.is_xenserver_format('image_meta').AndReturn(True)
+
+        drv._use_glance_plugin_to_upload_volume(
+            context, 'volume', 'image_service', 'image_meta').AndReturn(
+                'result')
+        mock.ReplayAll()
+
+        result = drv.copy_volume_to_image(
+            context, "volume", "image_service", "image_meta")
+        self.assertEquals('result', result)
+
+        mock.VerifyAll()
+
+    def test_copy_volume_to_image_non_xenserver_case(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        mock.StubOutWithMock(drv, '_use_image_utils_to_upload_volume')
+        mock.StubOutWithMock(driver, 'is_xenserver_format')
+        context = MockContext('token')
+
+        driver.is_xenserver_format('image_meta').AndReturn(False)
+
+        drv._use_image_utils_to_upload_volume(
+            context, 'volume', 'image_service', 'image_meta').AndReturn(
+                'result')
+        mock.ReplayAll()
+
+        result = drv.copy_volume_to_image(
+            context, "volume", "image_service", "image_meta")
+        self.assertEquals('result', result)
+
+        mock.VerifyAll()
+
     def test_copy_image_to_volume_xenserver_case(self):
         mock, drv = self._setup_mock_driver(
             'server', 'serverpath', '/var/run/sr-mount')
