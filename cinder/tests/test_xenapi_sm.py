@@ -332,6 +332,26 @@ class DriverTestCase(unittest.TestCase):
             context, volume, "image_service", "image_meta")
         mock.VerifyAll()
 
+    def test_use_glance_plugin_to_upload_volume(self):
+        mock, drv = self._setup_mock_driver(
+            'server', 'serverpath', '/var/run/sr-mount')
+
+        volume = dict(provider_location='sr-uuid/vdi-uuid')
+        context = MockContext('token')
+
+        mock.StubOutWithMock(driver.glance, 'get_api_servers')
+
+        driver.glance.get_api_servers().AndReturn((x for x in ['glancesrv']))
+
+        drv.nfs_ops.use_glance_plugin_to_upload_volume(
+            'server', 'serverpath', 'sr-uuid', 'vdi-uuid', 'glancesrv',
+            'image-id', 'token', '/var/run/sr-mount')
+
+        mock.ReplayAll()
+        drv._use_glance_plugin_to_upload_volume(
+            context, volume, "image_service", {"id": "image-id"})
+        mock.VerifyAll()
+
     def test_copy_image_to_volume_xenserver_case(self):
         mock, drv = self._setup_mock_driver(
             'server', 'serverpath', '/var/run/sr-mount')
