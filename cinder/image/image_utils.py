@@ -290,3 +290,15 @@ def upload_volume(context, image_service, image_meta, volume_path):
         with fileutils.file_open(tmp) as image_file:
             image_service.update(context, image_id, {}, image_file)
         os.unlink(tmp)
+
+
+def is_xenserver_image(context, image_service, image_id):
+    image_meta = image_service.show(context, image_id)
+    return is_xenserver_format(image_meta)
+
+
+def is_xenserver_format(image_meta):
+    return (
+        image_meta['disk_format'] == 'vhd'
+        and image_meta['container_format'] == 'ovf'
+    )
