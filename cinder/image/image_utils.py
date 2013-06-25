@@ -26,6 +26,7 @@ we should look at maybe pushign this up to OSLO
 """
 
 
+import contextlib
 import os
 import re
 import tempfile
@@ -336,14 +337,30 @@ def coalesce_vhd(vhd_path):
         'vhd-util', 'coalesce', '-n', vhd_path)
 
 
+def create_temporary_file():
+    fd, tmp = tempfile.mkstemp(dir=CONF.image_conversion_dir)
+    os.close(fd)
+    return tmp
+
+
+def remove_file(fname):
+    os.unlink(tmp)
+
+
+@contextlib.contextmanager
+def temporary_file():
+    try:
+        tmp = create_temporary_file()
+        yield tmp
+    finally:
+        remove_file(tmp)
+
+
 def coalesce_chain(vhd_chain):
     for child, parent in zip(vhd_chain[:-1], vhd_chain[1:]):
-        fd, tmp = tempfile.mkstemp(dir=CONF.image_conversion_dir)
-        os.close(fd)
-        with fileutils.remove_path_on_error(tmp):
+        with temporary_file() as tmp:
             size = get_vhd_size(child)
             resize_vhd(parent, size, tmp)
             coalesce_vhd(child)
-            os.unlink(tmp)
 
     return vhd_chain[-1]

@@ -169,9 +169,13 @@ class TestCoalesceChain(test.TestCase):
         self.mox.StubOutWithMock(image_utils, 'get_vhd_size')
         self.mox.StubOutWithMock(image_utils, 'resize_vhd')
         self.mox.StubOutWithMock(image_utils, 'coalesce_vhd')
+        self.mox.StubOutWithMock(image_utils, 'create_temporary_file')
+        self.mox.StubOutWithMock(image_utils, 'remove_file')
 
         image_utils.get_vhd_size('0.vhd').AndReturn(1024)
-        image_utils.resize_vhd('1.vhd', 1024, mox.IgnoreArg())
+        image_utils.create_temporary_file().AndReturn('tempfile')
+        image_utils.resize_vhd('1.vhd', 1024, 'tempfile')
+        image_utils.remove_file('tempfile')
         image_utils.coalesce_vhd('0.vhd')
         self.mox.ReplayAll()
 
