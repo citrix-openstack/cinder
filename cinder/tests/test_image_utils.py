@@ -145,7 +145,7 @@ class TestCoalesce(test.TestCase):
 
         utils.execute(
             'vhd-util', 'coalesce', '-n', 'vhdfile'
-            ).AndReturn(('ignored', 'ignored'))
+        ).AndReturn(('ignored', 'ignored'))
 
         mox.ReplayAll()
 
@@ -171,7 +171,6 @@ class TestTemporaryFile(test.TestCase):
 
         with image_utils.temporary_file():
             pass
-
 
     def test_file_unlinked_on_error(self):
         mox = self.mox
@@ -254,7 +253,8 @@ class TestXenServerImageToCoalescedVhd(test.TestCase):
         image_utils.discover_vhd_chain('somedir').AndReturn(
             ['somedir/0.vhd', 'somedir/1.vhd'])
         image_utils.fix_vhd_chain(['somedir/0.vhd', 'somedir/1.vhd'])
-        image_utils.coalesce_chain(['somedir/0.vhd', 'somedir/1.vhd']).AndReturn('somedir/1.vhd')
+        image_utils.coalesce_chain(
+            ['somedir/0.vhd', 'somedir/1.vhd']).AndReturn('somedir/1.vhd')
         image_utils.remove_file('image')
         image_utils.rename_file('somedir/1.vhd', 'image')
 

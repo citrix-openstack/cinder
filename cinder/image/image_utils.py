@@ -344,7 +344,7 @@ def create_temporary_file():
 
 
 def remove_file(fname):
-    os.unlink(tmp)
+    os.unlink(fname)
 
 
 def rename_file(src, dst):
