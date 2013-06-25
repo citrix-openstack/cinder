@@ -386,7 +386,7 @@ def discover_vhd_chain(directory):
     return chain
 
 
-def xenserver_image_to_coalesced_vhd(image_file):
+def replace_xenserver_image_with_coalesced_vhd(image_file):
     with temporary_dir() as tempdir:
         extract_targz(image_file, tempdir)
         chain = discover_vhd_chain(tempdir)

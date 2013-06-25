@@ -259,5 +259,5 @@ class TestXenServerImageToCoalescedVhd(test.TestCase):
         image_utils.rename_file('somedir/1.vhd', 'image')
 
         mox.ReplayAll()
-        image_utils.xenserver_image_to_coalesced_vhd('image')
+        image_utils.replace_xenserver_image_with_coalesced_vhd('image')
         mox.VerifyAll()
