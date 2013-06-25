@@ -302,3 +302,20 @@ def is_xenserver_format(image_meta):
         image_meta['disk_format'] == 'vhd'
         and image_meta['container_format'] == 'ovf'
     )
+
+
+def set_vhd_parent(vhdpath, parentpath):
+    utils.execute('vhd-util', 'modify', '-n', vhdpath, '-p', parentpath)
+
+
+class TarGz(object):
+    def __init__(self, archive_name):
+        self.archive_name = archive_name
+
+    def extract_to(self, target):
+        utils.execute('tar', '-xzf', self.archive_name, '-C', target)
+
+
+def fix_vhd_chain(vhd_chain):
+    for child, parent in zip(vhd_chain[:-1], vhd_chain[1:]):
+        set_vhd_parent(child, parent)

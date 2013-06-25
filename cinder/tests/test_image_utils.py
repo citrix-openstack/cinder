@@ -20,6 +20,7 @@ from cinder.image import image_utils
 from cinder import test
 from cinder import utils
 import mox
+import textwrap
 
 
 class TestUtils(test.TestCase):
@@ -43,3 +44,60 @@ class TestUtils(test.TestCase):
         image_utils.resize_image(TEST_IMG_SOURCE, TEST_IMG_SIZE_IN_GB)
 
         mox.VerifyAll()
+
+
+class TestExtractTo(test.TestCase):
+    def test_extract_to_calls_tar(self):
+        mox = self.mox
+        mox.StubOutWithMock(utils, 'execute')
+
+        utils.execute(
+            'tar', '-xzf', 'archive.tgz', '-C', 'targetpath').AndReturn(
+                ('ignored', 'ignored')
+            )
+
+        mox.ReplayAll()
+
+        image_utils.TarGz('archive.tgz').extract_to('targetpath')
+        mox.VerifyAll()
+
+
+class TestSetVhdParent(test.TestCase):
+    def test_vhd_util_call(self):
+        mox = self.mox
+        mox.StubOutWithMock(utils, 'execute')
+
+        utils.execute(
+            'vhd-util', 'modify', '-n', 'child', '-p', 'parent').AndReturn(
+                ('ignored', 'ignored')
+            )
+
+        mox.ReplayAll()
+
+        image_utils.set_vhd_parent('child', 'parent')
+        mox.VerifyAll()
+
+
+class TestFixVhdChain(test.TestCase):
+    def test_empty_chain(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'set_vhd_parent')
+
+        mox.ReplayAll()
+        image_utils.fix_vhd_chain([])
+
+    def test_single_vhd_file_chain(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'set_vhd_parent')
+
+        mox.ReplayAll()
+        image_utils.fix_vhd_chain(['0.vhd'])
+
+    def test_chain_with_two_elements(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'set_vhd_parent')
+
+        image_utils.set_vhd_parent('0.vhd', '1.vhd')
+
+        mox.ReplayAll()
+        image_utils.fix_vhd_chain(['0.vhd', '1.vhd'])
