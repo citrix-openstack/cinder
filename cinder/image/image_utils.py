@@ -304,8 +304,8 @@ def is_xenserver_format(image_meta):
     )
 
 
-def set_vhd_parent(vhdpath, parentpath):
-    utils.execute('vhd-util', 'modify', '-n', vhdpath, '-p', parentpath)
+def set_vhd_parent(vhd_path, parentpath):
+    utils.execute('vhd-util', 'modify', '-n', vhd_path, '-p', parentpath)
 
 
 class TarGz(object):
@@ -319,3 +319,18 @@ class TarGz(object):
 def fix_vhd_chain(vhd_chain):
     for child, parent in zip(vhd_chain[:-1], vhd_chain[1:]):
         set_vhd_parent(child, parent)
+
+
+def get_vhd_size(vhd_path):
+    out, err = utils.execute('vhd-util', 'query', '-n', vhd_path, '-v')
+    return int(out)
+
+
+def resize_vhd(vhd_path, size, journal):
+    utils.execute(
+        'vhd-util', 'resize', '-n', vhd_path, '-s', '%d' % size, '-j', journal)
+
+
+def coalesce_vhd(vhd_path):
+    utils.execute(
+        'vhd-util', 'coalesce', '-n', vhd_path)

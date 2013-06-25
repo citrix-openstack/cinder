@@ -101,3 +101,51 @@ class TestFixVhdChain(test.TestCase):
 
         mox.ReplayAll()
         image_utils.fix_vhd_chain(['0.vhd', '1.vhd'])
+
+
+class TestGetSize(test.TestCase):
+    def test_vhd_util_call(self):
+        mox = self.mox
+        mox.StubOutWithMock(utils, 'execute')
+
+        utils.execute(
+            'vhd-util', 'query', '-n', 'vhdfile', '-v').AndReturn(
+                ('1024', 'ignored')
+            )
+
+        mox.ReplayAll()
+
+        result = image_utils.get_vhd_size('vhdfile')
+        mox.VerifyAll()
+
+        self.assertEquals(1024, result)
+
+
+class TestResize(test.TestCase):
+    def test_vhd_util_call(self):
+        mox = self.mox
+        mox.StubOutWithMock(utils, 'execute')
+
+        utils.execute(
+            'vhd-util', 'resize', '-n', 'vhdfile', '-s', '1024',
+            '-j', 'journal').AndReturn(('ignored', 'ignored'))
+
+        mox.ReplayAll()
+
+        image_utils.resize_vhd('vhdfile', 1024, 'journal')
+        mox.VerifyAll()
+
+
+class TestCoalesce(test.TestCase):
+    def test_vhd_util_call(self):
+        mox = self.mox
+        mox.StubOutWithMock(utils, 'execute')
+
+        utils.execute(
+            'vhd-util', 'coalesce', '-n', 'vhdfile'
+            ).AndReturn(('ignored', 'ignored'))
+
+        mox.ReplayAll()
+
+        image_utils.coalesce_vhd('vhdfile')
+        mox.VerifyAll()
