@@ -334,3 +334,16 @@ def resize_vhd(vhd_path, size, journal):
 def coalesce_vhd(vhd_path):
     utils.execute(
         'vhd-util', 'coalesce', '-n', vhd_path)
+
+
+def coalesce_chain(vhd_chain):
+    for child, parent in zip(vhd_chain[:-1], vhd_chain[1:]):
+        fd, tmp = tempfile.mkstemp(dir=CONF.image_conversion_dir)
+        os.close(fd)
+        with fileutils.remove_path_on_error(tmp):
+            size = get_vhd_size(child)
+            resize_vhd(parent, size, tmp)
+            coalesce_vhd(child)
+            os.unlink(tmp)
+
+    return vhd_chain[-1]

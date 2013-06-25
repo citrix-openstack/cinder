@@ -149,3 +149,32 @@ class TestCoalesce(test.TestCase):
 
         image_utils.coalesce_vhd('vhdfile')
         mox.VerifyAll()
+
+
+class TestCoalesceChain(test.TestCase):
+    def test_single_vhd(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'get_vhd_size')
+        mox.StubOutWithMock(image_utils, 'resize_vhd')
+        mox.StubOutWithMock(image_utils, 'coalesce_vhd')
+
+        mox.ReplayAll()
+
+        result = image_utils.coalesce_chain(['0.vhd'])
+        mox.VerifyAll()
+
+        self.assertEquals('0.vhd', result)
+
+    def test_chain_of_two_vhds(self):
+        self.mox.StubOutWithMock(image_utils, 'get_vhd_size')
+        self.mox.StubOutWithMock(image_utils, 'resize_vhd')
+        self.mox.StubOutWithMock(image_utils, 'coalesce_vhd')
+
+        image_utils.get_vhd_size('0.vhd').AndReturn(1024)
+        image_utils.resize_vhd('1.vhd', 1024, mox.IgnoreArg())
+        image_utils.coalesce_vhd('0.vhd')
+        self.mox.ReplayAll()
+
+        result = image_utils.coalesce_chain(['0.vhd', '1.vhd'])
+        self.mox.VerifyAll()
+        self.assertEquals('1.vhd', result)
