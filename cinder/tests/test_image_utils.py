@@ -221,7 +221,7 @@ class TestCoalesceChain(test.TestCase):
         self.assertEquals('1.vhd', result)
 
 
-class DiscoverChain(test.TestCase):
+class TestDiscoverChain(test.TestCase):
     def test_discovery_calls(self):
         mox = self.mox
         mox.StubOutWithMock(image_utils, 'file_exist')
