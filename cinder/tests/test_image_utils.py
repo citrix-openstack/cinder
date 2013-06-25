@@ -16,11 +16,13 @@
 #    under the License.
 """Unit tests for image utils."""
 
+import contextlib
+import mox
+import textwrap
+
 from cinder.image import image_utils
 from cinder import test
 from cinder import utils
-import mox
-import textwrap
 
 
 class TestUtils(test.TestCase):
@@ -151,6 +153,43 @@ class TestCoalesce(test.TestCase):
         mox.VerifyAll()
 
 
+@contextlib.contextmanager
+def fake_context(return_value):
+    yield return_value
+
+
+class TestTemporaryFile(test.TestCase):
+    def test_file_unlinked(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'create_temporary_file')
+        mox.StubOutWithMock(image_utils, 'remove_file')
+
+        image_utils.create_temporary_file().AndReturn('somefile')
+        image_utils.remove_file('somefile')
+
+        mox.ReplayAll()
+
+        with image_utils.temporary_file():
+            pass
+
+
+    def test_file_unlinked_on_error(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'create_temporary_file')
+        mox.StubOutWithMock(image_utils, 'remove_file')
+
+        image_utils.create_temporary_file().AndReturn('somefile')
+        image_utils.remove_file('somefile')
+
+        mox.ReplayAll()
+
+        def sut():
+            with image_utils.temporary_file():
+                raise Exception()
+
+        self.assertRaises(Exception, sut)
+
+
 class TestCoalesceChain(test.TestCase):
     def test_single_vhd(self):
         mox = self.mox
@@ -169,13 +208,11 @@ class TestCoalesceChain(test.TestCase):
         self.mox.StubOutWithMock(image_utils, 'get_vhd_size')
         self.mox.StubOutWithMock(image_utils, 'resize_vhd')
         self.mox.StubOutWithMock(image_utils, 'coalesce_vhd')
-        self.mox.StubOutWithMock(image_utils, 'create_temporary_file')
-        self.mox.StubOutWithMock(image_utils, 'remove_file')
+        self.mox.StubOutWithMock(image_utils, 'temporary_file')
 
         image_utils.get_vhd_size('0.vhd').AndReturn(1024)
-        image_utils.create_temporary_file().AndReturn('tempfile')
+        image_utils.temporary_file().AndReturn(fake_context('tempfile'))
         image_utils.resize_vhd('1.vhd', 1024, 'tempfile')
-        image_utils.remove_file('tempfile')
         image_utils.coalesce_vhd('0.vhd')
         self.mox.ReplayAll()
 
