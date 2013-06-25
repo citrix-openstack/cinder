@@ -222,9 +222,7 @@ def fetch_to_raw(context, image_service,
     # large and cause disk full errors which would confuse users.
     # Unfortunately it seems that you can't pipe to 'qemu-img convert' because
     # it seeks. Maybe we can think of something for a future version.
-    fd, tmp = tempfile.mkstemp(dir=CONF.image_conversion_dir)
-    os.close(fd)
-    with fileutils.remove_path_on_error(tmp):
+    with temporary_file() as tmp:
         fetch(context, image_service, image_id, tmp, user_id, project_id)
 
         data = qemu_img_info(tmp)
@@ -257,7 +255,6 @@ def fetch_to_raw(context, image_service,
                 image_id=image_id,
                 reason=_("Converted to raw, but format is now %s") %
                 data.file_format)
-        os.unlink(tmp)
 
 
 def upload_volume(context, image_service, image_meta, volume_path):
