@@ -344,6 +344,10 @@ def remove_file(fname):
     os.unlink(tmp)
 
 
+def rename_file(src, dst):
+    os.rename(src, dst)
+
+
 @contextlib.contextmanager
 def temporary_file():
     try:
@@ -351,6 +355,10 @@ def temporary_file():
         yield tmp
     finally:
         remove_file(tmp)
+
+
+def temporary_dir():
+    return utils.tempdir(dir=CONF.image_conversion_dir)
 
 
 def coalesce_chain(vhd_chain):
@@ -377,3 +385,12 @@ def discover_vhd_chain(directory):
 
     return chain
 
+
+def xenserver_image_to_coalesced_vhd(image_file):
+    with temporary_dir() as tempdir:
+        extract_targz(image_file, tempdir)
+        chain = discover_vhd_chain(tempdir)
+        fix_vhd_chain(chain)
+        coalesced = coalesce_chain(chain)
+        remove_file(image_file)
+        rename_file(coalesced, image_file)

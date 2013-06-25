@@ -236,3 +236,28 @@ class TestDiscoverChain(test.TestCase):
 
         self.assertEquals(
             ['some/path/0.vhd', 'some/path/1.vhd'], result)
+
+
+class TestXenServerImageToCoalescedVhd(test.TestCase):
+    def test_calls(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'temporary_dir')
+        mox.StubOutWithMock(image_utils, 'extract_targz')
+        mox.StubOutWithMock(image_utils, 'discover_vhd_chain')
+        mox.StubOutWithMock(image_utils, 'fix_vhd_chain')
+        mox.StubOutWithMock(image_utils, 'coalesce_chain')
+        mox.StubOutWithMock(image_utils, 'remove_file')
+        mox.StubOutWithMock(image_utils, 'rename_file')
+
+        image_utils.temporary_dir().AndReturn(fake_context('somedir'))
+        image_utils.extract_targz('image', 'somedir')
+        image_utils.discover_vhd_chain('somedir').AndReturn(
+            ['somedir/0.vhd', 'somedir/1.vhd'])
+        image_utils.fix_vhd_chain(['somedir/0.vhd', 'somedir/1.vhd'])
+        image_utils.coalesce_chain(['somedir/0.vhd', 'somedir/1.vhd']).AndReturn('somedir/1.vhd')
+        image_utils.remove_file('image')
+        image_utils.rename_file('somedir/1.vhd', 'image')
+
+        mox.ReplayAll()
+        image_utils.xenserver_image_to_coalesced_vhd('image')
+        mox.VerifyAll()
