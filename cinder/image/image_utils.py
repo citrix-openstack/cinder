@@ -305,6 +305,10 @@ def is_xenserver_format(image_meta):
     )
 
 
+def file_exist(fpath):
+    return os.path.exists(fpath)
+
+
 def set_vhd_parent(vhd_path, parentpath):
     utils.execute('vhd-util', 'modify', '-n', vhd_path, '-p', parentpath)
 
@@ -360,3 +364,19 @@ def coalesce_chain(vhd_chain):
             coalesce_vhd(child)
 
     return vhd_chain[-1]
+
+
+def discover_vhd_chain(directory):
+    counter = 0
+    chain = []
+
+    while True:
+        fpath = os.path.join(directory, '%d.vhd' % counter)
+        if file_exist(fpath):
+            chain.append(fpath)
+        else:
+            break
+        counter += 1
+
+    return chain
+

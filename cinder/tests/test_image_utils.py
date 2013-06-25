@@ -219,3 +219,20 @@ class TestCoalesceChain(test.TestCase):
         result = image_utils.coalesce_chain(['0.vhd', '1.vhd'])
         self.mox.VerifyAll()
         self.assertEquals('1.vhd', result)
+
+
+class DiscoverChain(test.TestCase):
+    def test_discovery_calls(self):
+        mox = self.mox
+        mox.StubOutWithMock(image_utils, 'file_exist')
+
+        image_utils.file_exist('some/path/0.vhd').AndReturn(True)
+        image_utils.file_exist('some/path/1.vhd').AndReturn(True)
+        image_utils.file_exist('some/path/2.vhd').AndReturn(False)
+
+        mox.ReplayAll()
+        result = image_utils.discover_vhd_chain('some/path')
+        mox.VerifyAll()
+
+        self.assertEquals(
+            ['some/path/0.vhd', 'some/path/1.vhd'], result)
