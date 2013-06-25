@@ -225,6 +225,9 @@ def fetch_to_raw(context, image_service,
     with temporary_file() as tmp:
         fetch(context, image_service, image_id, tmp, user_id, project_id)
 
+        if is_xenserver_image(context, image_service, image_id):
+            replace_xenserver_image_with_coalesced_vhd(tmp)
+
         data = qemu_img_info(tmp)
         fmt = data.file_format
         if fmt is None:
