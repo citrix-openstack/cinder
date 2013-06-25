@@ -60,7 +60,7 @@ class TestExtractTo(test.TestCase):
 
         mox.ReplayAll()
 
-        image_utils.TarGz('archive.tgz').extract_to('targetpath')
+        image_utils.extract_targz('archive.tgz', 'targetpath')
         mox.VerifyAll()
 
 

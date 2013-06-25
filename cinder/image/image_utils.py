@@ -309,12 +309,8 @@ def set_vhd_parent(vhd_path, parentpath):
     utils.execute('vhd-util', 'modify', '-n', vhd_path, '-p', parentpath)
 
 
-class TarGz(object):
-    def __init__(self, archive_name):
-        self.archive_name = archive_name
-
-    def extract_to(self, target):
-        utils.execute('tar', '-xzf', self.archive_name, '-C', target)
+def extract_targz(archive_name, target):
+    utils.execute('tar', '-xzf', archive_name, '-C', target)
 
 
 def fix_vhd_chain(vhd_chain):
